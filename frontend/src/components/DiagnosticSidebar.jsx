@@ -6,7 +6,7 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
-export default function DiagnosticSidebar({ part, onExportReport }) {
+export default function DiagnosticSidebar({ part, onExportReport, isLiveInferencing }) {
   const [completedSteps, setCompletedSteps] = useState({});
   const [showTarget, setShowTarget] = useState(false);
   const [showReasoning, setShowReasoning] = useState(false);
@@ -88,6 +88,17 @@ export default function DiagnosticSidebar({ part, onExportReport }) {
 
       {/* Scrollable Body */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+        {/* Live Cloud Inference Status Banner */}
+        {isLiveInferencing && (
+          <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl flex items-center gap-3 animate-pulse">
+            <div className="w-5 h-5 rounded-full border-2 border-teal-600 border-t-transparent animate-spin shrink-0"></div>
+            <div>
+              <div className="text-[11px] font-bold text-teal-900 font-mono">Modal Cloud Inference Active...</div>
+              <div className="text-[9px] text-teal-700">Meta Muse Spark Open is reasoning via Baseten 2M TPM</div>
+            </div>
+          </div>
+        )}
+
         {/* Safety Alert */}
         {part.safetyAlert && (
           <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2.5 text-xs text-red-700">

@@ -4,8 +4,9 @@ import HardwareCanvas from './components/HardwareCanvas';
 import DiagnosticSidebar from './components/DiagnosticSidebar';
 import WorkOrderModal from './components/WorkOrderModal';
 import LoadingScreen from './components/LoadingScreen';
+import GuideModal from './components/GuideModal';
 import { PRESET_SCENARIOS } from './data/presets';
-import { Activity, Volume2, VolumeX, Cloud, CheckCircle } from 'lucide-react';
+import { Activity, Volume2, VolumeX, Cloud, CheckCircle, HelpCircle, ArrowRight, Sparkles } from 'lucide-react';
 
 const LIVE_MODAL_API_URL = "https://nitesh-naasai--fixlens-backend-diagnose.us-east.modal.run";
 
@@ -19,6 +20,7 @@ export default function App() {
   const [lastClickPoint, setLastClickPoint] = useState(null);
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLiveInferencing, setIsLiveInferencing] = useState(false);
+  const [showGuideModal, setShowGuideModal] = useState(false);
 
   const handleFinishLoading = useCallback(() => setIsLoading(false), []);
 
@@ -196,9 +198,26 @@ export default function App() {
         onFileUpload={handleFileUpload}
         apiKey={apiKey}
         setApiKey={setApiKey}
+        onOpenGuide={() => setShowGuideModal(true)}
       />
 
-      <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-5">
+      <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-4">
+        {/* Quick Action Hint Banner */}
+        <div className="bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 shadow-xs">
+          <div className="flex items-center gap-2.5">
+            <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
+            <span>
+              <strong>Quick Guide:</strong> Click any component to inspect defects, or <strong>click anywhere on the image</strong> to trigger real-time zero-shot AI diagnosis.
+            </span>
+          </div>
+          <button
+            onClick={() => setShowGuideModal(true)}
+            className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1 shrink-0"
+          >
+            How to Use <ArrowRight className="w-3 h-3" />
+          </button>
+        </div>
+
         {/* Info & Live Cloud Status Bar */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
           <div>
@@ -266,6 +285,10 @@ export default function App() {
 
       {workOrderPart && (
         <WorkOrderModal part={workOrderPart} scenario={selectedScenario} onClose={() => setWorkOrderPart(null)} />
+      )}
+
+      {showGuideModal && (
+        <GuideModal onClose={() => setShowGuideModal(false)} />
       )}
     </div>
   );

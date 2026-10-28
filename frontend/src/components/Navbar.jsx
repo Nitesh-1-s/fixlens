@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Key, Check, X, ChevronDown } from 'lucide-react';
+import { Upload, Key, Check, X, ChevronDown, HelpCircle } from 'lucide-react';
 import Logo from './Logo';
 
 export default function Navbar({
@@ -8,7 +8,8 @@ export default function Navbar({
   onSelectScenario,
   onFileUpload,
   apiKey,
-  setApiKey
+  setApiKey,
+  onOpenGuide
 }) {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [tempKey, setTempKey] = useState(apiKey || '');
@@ -92,8 +93,16 @@ export default function Navbar({
             )}
           </div>
 
-          {/* API Key */}
-          <div className="flex items-center gap-3">
+          {/* Guide & API Key */}
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onOpenGuide}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all flex items-center gap-1.5"
+            >
+              <HelpCircle className="w-3.5 h-3.5 text-teal-600" />
+              <span>How to Use</span>
+            </button>
+
             <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-400 font-mono">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500"></span>
               muse-spark-open-1026
