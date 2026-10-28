@@ -1,53 +1,35 @@
 import React, { useState } from 'react';
 import {
-  AlertTriangle,
-  CheckCircle2,
-  ShieldAlert,
-  Wrench,
-  Cpu,
-  Layers,
-  Sparkles,
-  FileText,
-  Download,
-  Share2,
-  CheckSquare,
-  Square,
-  Activity,
-  ArrowRight
+  AlertTriangle, CheckCircle2, ShieldAlert, Wrench, Sparkles,
+  Layers, Activity, ArrowRight, Download, Share2, CheckSquare, Square,
+  Cpu, ChevronDown
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 
 export default function DiagnosticSidebar({ part, onExportReport }) {
   const [completedSteps, setCompletedSteps] = useState({});
-  const [showTargetState, setShowTargetState] = useState(false);
+  const [showTarget, setShowTarget] = useState(false);
+  const [showReasoning, setShowReasoning] = useState(false);
 
   if (!part) {
     return (
-      <div className="w-full lg:w-[460px] h-full flex flex-col items-center justify-center p-8 bg-slate-900/60 border border-slate-800 rounded-2xl text-center backdrop-blur-md">
-        <div className="w-16 h-16 rounded-2xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center text-cyan-400 mb-4 animate-pulse">
-          <Cpu className="w-8 h-8" />
+      <div className="w-full lg:w-[440px] h-full flex flex-col items-center justify-center p-8 bg-white border border-slate-200 rounded-2xl text-center">
+        <div className="w-14 h-14 rounded-2xl bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600 mb-4">
+          <Sparkles className="w-6 h-6" />
         </div>
-        <h3 className="text-lg font-bold text-slate-200">No Component Selected</h3>
-        <p className="text-sm text-slate-400 max-w-xs mt-2 leading-relaxed">
-          Click any component or point on the interactive canvas to run <strong>SAM 3.1 segmentation</strong> and <strong>Muse Spark multimodal diagnostic reasoning</strong>.
+        <h3 className="text-sm font-bold text-slate-800">No Component Selected</h3>
+        <p className="text-xs text-slate-400 max-w-[240px] mt-2 leading-relaxed">
+          Click any component on the canvas to view its diagnostic report.
         </p>
       </div>
     );
   }
 
-  const toggleStep = (index) => {
+  const toggleStep = (idx) => {
     setCompletedSteps((prev) => {
-      const next = { ...prev, [index]: !prev[index] };
-
-      // Trigger confetti if all steps are completed!
-      const totalSteps = part.steps.length;
-      const completedCount = Object.values(next).filter(Boolean).length;
-      if (completedCount === totalSteps) {
-        confetti({
-          particleCount: 80,
-          spread: 60,
-          origin: { y: 0.6 }
-        });
+      const next = { ...prev, [idx]: !prev[idx] };
+      if (Object.values(next).filter(Boolean).length === part.steps.length) {
+        confetti({ particleCount: 60, spread: 50, origin: { y: 0.6 } });
       }
       return next;
     });
@@ -56,65 +38,47 @@ export default function DiagnosticSidebar({ part, onExportReport }) {
   const completedCount = Object.values(completedSteps).filter(Boolean).length;
   const progressPct = Math.round((completedCount / (part.steps?.length || 1)) * 100);
 
+  const statusStyles = {
+    critical: { bg: 'bg-red-50', text: 'text-red-700', border: 'border-red-200', dot: 'bg-red-500' },
+    warning: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200', dot: 'bg-amber-500' },
+    normal: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', dot: 'bg-emerald-500' },
+  };
+  const st = statusStyles[part.status] || statusStyles.normal;
+
   return (
-    <div className="w-full lg:w-[480px] h-full flex flex-col bg-slate-900/90 border border-slate-800 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-md">
-      {/* Sidebar Header */}
-      <div className="p-5 border-b border-slate-800 bg-slate-950/60">
-        <div className="flex items-center justify-between gap-2 mb-2">
-          <span className="px-2.5 py-0.5 rounded-full text-[11px] font-mono font-semibold bg-slate-800 text-cyan-400 border border-cyan-500/30">
+    <div className="w-full lg:w-[460px] h-full flex flex-col bg-white border border-slate-200 rounded-2xl overflow-hidden">
+      {/* Header */}
+      <div className="p-5 border-b border-slate-100">
+        <div className="flex items-center justify-between mb-2">
+          <span className="px-2 py-0.5 rounded text-[10px] font-mono font-semibold bg-slate-100 text-slate-600">
             {part.designator.split(' - ')[0]}
           </span>
-
-          <span
-            className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider flex items-center gap-1.5 ${
-              part.status === 'critical'
-                ? 'bg-rose-500/20 text-rose-300 border border-rose-500/40'
-                : part.status === 'warning'
-                ? 'bg-amber-500/20 text-amber-300 border border-amber-500/40'
-                : 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
-            }`}
-          >
-            {part.status === 'critical' ? (
-              <ShieldAlert className="w-3.5 h-3.5" />
-            ) : part.status === 'warning' ? (
-              <AlertTriangle className="w-3.5 h-3.5" />
-            ) : (
-              <CheckCircle2 className="w-3.5 h-3.5" />
-            )}
+          <span className={`px-2.5 py-1 rounded-lg text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 ${st.bg} ${st.text} border ${st.border}`}>
+            <span className={`w-1.5 h-1.5 rounded-full ${st.dot}`}></span>
             {part.status}
           </span>
         </div>
 
-        <h2 className="text-xl font-bold text-white tracking-tight">{part.name}</h2>
-        <p className="text-xs font-mono text-slate-400 mt-0.5">{part.designator}</p>
+        <h2 className="text-base font-bold text-slate-900">{part.name}</h2>
+        <p className="text-[10px] font-mono text-slate-400 mt-0.5">{part.designator}</p>
 
-        {/* Health Score Progress Bar */}
-        <div className="mt-4 p-3 bg-slate-900/80 rounded-xl border border-slate-800/80">
+        {/* Health Bar */}
+        <div className="mt-4 p-3 bg-slate-50 rounded-xl border border-slate-100">
           <div className="flex items-center justify-between text-xs mb-1.5">
-            <span className="text-slate-400 flex items-center gap-1.5 font-medium">
-              <Activity className="w-3.5 h-3.5 text-cyan-400" />
-              Structural Health Index
+            <span className="text-slate-500 flex items-center gap-1.5 font-medium">
+              <Activity className="w-3.5 h-3.5 text-teal-600" />
+              Health Index
             </span>
-            <span
-              className={`font-mono font-bold ${
-                part.healthScore < 40
-                  ? 'text-rose-400'
-                  : part.healthScore < 70
-                  ? 'text-amber-400'
-                  : 'text-emerald-400'
-              }`}
-            >
-              {part.healthScore} / 100
+            <span className={`font-mono font-bold ${
+              part.healthScore < 40 ? 'text-red-600' : part.healthScore < 70 ? 'text-amber-600' : 'text-emerald-600'
+            }`}>
+              {part.healthScore}/100
             </span>
           </div>
-          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+          <div className="w-full h-1.5 bg-slate-200 rounded-full overflow-hidden">
             <div
               className={`h-full transition-all duration-500 rounded-full ${
-                part.healthScore < 40
-                  ? 'bg-gradient-to-r from-rose-600 to-rose-400'
-                  : part.healthScore < 70
-                  ? 'bg-gradient-to-r from-amber-600 to-amber-400'
-                  : 'bg-gradient-to-r from-emerald-600 to-emerald-400'
+                part.healthScore < 40 ? 'bg-red-500' : part.healthScore < 70 ? 'bg-amber-500' : 'bg-emerald-500'
               }`}
               style={{ width: `${part.healthScore}%` }}
             />
@@ -122,125 +86,140 @@ export default function DiagnosticSidebar({ part, onExportReport }) {
         </div>
       </div>
 
-      {/* Scrollable Content Body */}
+      {/* Scrollable Body */}
       <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
-        {/* Safety Warning */}
+        {/* Safety Alert */}
         {part.safetyAlert && (
-          <div className="p-3.5 bg-rose-950/40 border border-rose-800/60 rounded-xl flex items-start gap-3 text-rose-200">
-            <ShieldAlert className="w-5 h-5 text-rose-400 shrink-0 mt-0.5" />
-            <div className="text-xs leading-relaxed font-medium">
-              <strong className="text-rose-300 font-bold">Safety Hazard: </strong>
-              {part.safetyAlert}
-            </div>
+          <div className="p-3 bg-red-50 border border-red-100 rounded-xl flex items-start gap-2.5 text-xs text-red-700">
+            <ShieldAlert className="w-4 h-4 text-red-500 shrink-0 mt-0.5" />
+            <span className="leading-relaxed"><strong>Safety:</strong> {part.safetyAlert}</span>
           </div>
         )}
 
-        {/* Muse Spark Diagnostic Synthesis */}
+        {/* Meta Muse Spark Reasoning Trace */}
+        {part.reasoningTrace && (
+          <div className="border border-slate-200 rounded-xl overflow-hidden bg-white">
+            <button
+              onClick={() => setShowReasoning(!showReasoning)}
+              className="w-full flex items-center justify-between p-3 bg-slate-50 hover:bg-slate-100 transition-colors text-left"
+            >
+              <span className="text-[10px] font-bold uppercase tracking-wider text-slate-700 flex items-center gap-1.5 font-mono">
+                <Cpu className="w-3.5 h-3.5 text-teal-600" />
+                Meta Muse Spark Reasoning Trace
+              </span>
+              <span className="text-[10px] font-mono text-teal-600 flex items-center gap-1 font-semibold">
+                {showReasoning ? 'Hide CoT' : 'View Chain-of-Thought'}
+                <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showReasoning ? 'rotate-180' : ''}`} />
+              </span>
+            </button>
+            {showReasoning && (
+              <div className="p-3 bg-slate-900 text-slate-200 font-mono text-[11px] leading-relaxed border-t border-slate-800">
+                <div className="flex items-center justify-between text-slate-400 border-b border-slate-800 pb-2 mb-2 text-[10px]">
+                  <span>// MODEL: meta-models/muse-spark-open-1026</span>
+                  <span className="text-teal-400">STATUS: VERIFIED CoT</span>
+                </div>
+                <div className="whitespace-pre-wrap text-slate-300">
+                  {part.reasoningTrace}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Diagnosis */}
         <div>
-          <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-cyan-400" />
-              Muse Spark Diagnostic
-            </h4>
-            <span className="text-[10px] font-mono text-cyan-400 bg-cyan-950/60 px-2 py-0.5 rounded border border-cyan-800/50">
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
+            <Sparkles className="w-3 h-3 text-teal-600" />
+            Diagnostic Analysis
+          </h4>
+          <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
+            {part.diagnosis}
+          </p>
+          <div className="mt-1.5 text-right">
+            <span className="text-[10px] font-mono text-teal-600">
               Confidence: {(part.confidence * 100).toFixed(1)}%
             </span>
-          </div>
-          <div className="p-3.5 bg-slate-950/80 rounded-xl border border-slate-800 text-xs text-slate-300 leading-relaxed font-normal">
-            {part.diagnosis}
           </div>
         </div>
 
         {/* Root Cause */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-            <Layers className="w-3.5 h-3.5 text-amber-400" />
-            Root Cause Analysis
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
+            <Layers className="w-3 h-3 text-amber-500" />
+            Root Cause
           </h4>
-          <div className="p-3 bg-slate-950/60 rounded-xl border border-slate-800/80 text-xs text-slate-300">
+          <p className="text-xs text-slate-600 leading-relaxed bg-slate-50 p-3 rounded-xl border border-slate-100">
             {part.rootCause}
-          </div>
+          </p>
         </div>
 
-        {/* Muse Image Visual Target Comparison */}
+        {/* Target Spec */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <Cpu className="w-3.5 h-3.5 text-emerald-400" />
-              Muse Image: Target Repaired State
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+              <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+              Target State
             </h4>
             <button
-              onClick={() => setShowTargetState(!showTargetState)}
-              className="text-[11px] font-mono text-emerald-400 hover:underline flex items-center gap-1"
+              onClick={() => setShowTarget(!showTarget)}
+              className="text-[10px] font-medium text-teal-600 hover:underline flex items-center gap-0.5"
             >
-              {showTargetState ? 'Hide Target' : 'View Target Spec'}
-              <ArrowRight className="w-3 h-3" />
+              {showTarget ? 'Hide' : 'View'} <ArrowRight className="w-2.5 h-2.5" />
             </button>
           </div>
-
-          {showTargetState && (
-            <div className="p-3.5 bg-emerald-950/30 border border-emerald-800/50 rounded-xl text-xs space-y-2">
-              <div className="text-emerald-300 font-semibold">Specification:</div>
-              <div className="text-slate-300 font-mono text-[11px]">{part.targetSpec}</div>
-              <div className="text-emerald-400 font-medium text-[11px]">
-                {part.museVisualRepair}
-              </div>
+          {showTarget && (
+            <div className="p-3 bg-emerald-50 border border-emerald-100 rounded-xl text-xs space-y-1.5">
+              <div className="text-emerald-800 font-mono text-[11px]">{part.targetSpec}</div>
+              <div className="text-emerald-600 text-[11px]">{part.museVisualRepair}</div>
             </div>
           )}
         </div>
 
-        {/* Required Tools */}
+        {/* Tools */}
         <div>
-          <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 mb-2 flex items-center gap-1.5">
-            <Wrench className="w-3.5 h-3.5 text-cyan-400" />
-            Required Tooling & Consumables
+          <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-2 flex items-center gap-1.5">
+            <Wrench className="w-3 h-3 text-teal-600" />
+            Required Tools
           </h4>
           <div className="flex flex-wrap gap-1.5">
-            {part.tools?.map((tool, idx) => (
-              <span
-                key={idx}
-                className="px-2.5 py-1 bg-slate-800/70 text-slate-300 rounded-lg text-[11px] border border-slate-700/60 flex items-center gap-1"
-              >
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+            {part.tools?.map((tool, i) => (
+              <span key={i} className="px-2 py-1 bg-slate-50 text-slate-600 rounded-lg text-[10px] border border-slate-100">
                 {tool}
               </span>
             ))}
           </div>
         </div>
 
-        {/* Step-by-Step Interactive Teardown Checklist */}
+        {/* Repair Steps */}
         <div>
           <div className="flex items-center justify-between mb-2">
-            <h4 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <CheckSquare className="w-3.5 h-3.5 text-cyan-400" />
-              Interactive Repair Workflow ({completedCount}/{part.steps?.length || 0})
+            <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
+              <CheckSquare className="w-3 h-3 text-teal-600" />
+              Repair Steps ({completedCount}/{part.steps?.length || 0})
             </h4>
-            <span className="text-[10px] font-mono text-cyan-400">{progressPct}% Complete</span>
+            <span className="text-[10px] font-mono text-teal-600">{progressPct}%</span>
           </div>
 
-          <div className="space-y-2">
+          <div className="space-y-1.5">
             {part.steps?.map((step, idx) => {
               const isDone = !!completedSteps[idx];
               return (
                 <div
                   key={idx}
                   onClick={() => toggleStep(idx)}
-                  className={`p-3 rounded-xl border transition-all cursor-pointer flex items-start gap-3 text-xs ${
+                  className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-start gap-2.5 text-xs ${
                     isDone
-                      ? 'bg-emerald-950/30 border-emerald-700/60 text-slate-300'
-                      : 'bg-slate-950/70 border-slate-800 text-slate-300 hover:border-slate-700 hover:bg-slate-900/60'
+                      ? 'bg-emerald-50 border-emerald-100 text-slate-500'
+                      : 'bg-white border-slate-100 text-slate-600 hover:border-slate-200 hover:bg-slate-50'
                   }`}
                 >
-                  <button className="mt-0.5 text-emerald-400 shrink-0">
-                    {isDone ? (
-                      <CheckCircle2 className="w-4 h-4 text-emerald-400" />
-                    ) : (
-                      <Square className="w-4 h-4 text-slate-600" />
-                    )}
-                  </button>
-                  <span className={`leading-relaxed ${isDone ? 'line-through text-slate-500' : ''}`}>
-                    <strong className="text-cyan-400 mr-1.5">Step {idx + 1}:</strong>
-                    {step}
+                  {isDone ? (
+                    <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0 mt-0.5" />
+                  ) : (
+                    <Square className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" />
+                  )}
+                  <span className={`leading-relaxed ${isDone ? 'line-through' : ''}`}>
+                    <strong className="text-teal-600 mr-1">{idx + 1}.</strong>{step}
                   </span>
                 </div>
               );
@@ -249,20 +228,18 @@ export default function DiagnosticSidebar({ part, onExportReport }) {
         </div>
       </div>
 
-      {/* Sidebar Footer Action */}
-      <div className="p-4 border-t border-slate-800 bg-slate-950/80 flex items-center justify-between gap-2">
+      {/* Footer */}
+      <div className="p-4 border-t border-slate-100 flex items-center gap-2">
         <button
           onClick={() => onExportReport(part)}
-          className="flex-1 py-2.5 px-4 bg-gradient-to-r from-cyan-500 to-blue-600 hover:from-cyan-400 hover:to-blue-500 text-slate-950 font-bold rounded-xl transition-all shadow-lg shadow-cyan-500/20 text-xs flex items-center justify-center gap-2"
+          className="flex-1 py-2.5 bg-teal-600 hover:bg-teal-700 text-white font-semibold rounded-xl transition-colors text-xs flex items-center justify-center gap-2"
         >
           <Download className="w-4 h-4" />
-          Export Repair Work Order
+          Export Work Order
         </button>
-
         <button
-          onClick={() => alert(`Part: ${part.name}\nDiagnostic Status: ${part.statusLabel}\nExported to clipboard.`)}
-          className="p-2.5 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl transition-colors border border-slate-700"
-          title="Share Report"
+          onClick={() => navigator.clipboard?.writeText(`FixLens Report: ${part.name} — ${part.statusLabel}`)}
+          className="p-2.5 bg-slate-50 hover:bg-slate-100 text-slate-500 rounded-xl transition-colors border border-slate-200"
         >
           <Share2 className="w-4 h-4" />
         </button>

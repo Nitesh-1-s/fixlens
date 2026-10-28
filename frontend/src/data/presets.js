@@ -38,7 +38,8 @@ export const PRESET_SCENARIOS = [
           'Solder leads, trim excess wire, and inspect solder joint meniscus under 10x magnification.'
         ],
         targetSpec: 'Nichicon / Panasonic FR Series 1000μF 16V ±20% 105°C, 5000h endurance.',
-        museVisualRepair: 'Pristine flat vent seal with bright metallic finish and zero electrolyte residue.'
+        museVisualRepair: 'Pristine flat vent seal with bright metallic finish and zero electrolyte residue.',
+        reasoningTrace: '• Visual Telemetry: Radial aluminum capacitor C12 at coordinates [38%, 44%].\n• Optical Inspection: Positive convex doming on the top scored vent (+1.4mm deflection). Seeping brown electrolyte crystallization around the rubber base.\n• Physics & Electronics Reasoning: Vent rupture indicates internal hydrogen gas buildup caused by prolonged ripple current over-stress. Calculated ESR increase >18x nominal, resulting in 280mV ripple on the 12V Vcore rail.\n• Resolution Vector: Discharge capacitor via 1kΩ bleed resistor, desolder at 360°C, and replace with low-ESR solid polymer Nichicon FR 105°C unit.'
       },
       {
         id: 'mosfet_q4',
@@ -68,7 +69,8 @@ export const PRESET_SCENARIOS = [
           'Re-torque heatsink evenly to ensure planar pressure distribution.'
         ],
         targetSpec: 'Vishay Siliconix Si4838DY or equivalent D-PAK N-Channel 30V 40A.',
-        museVisualRepair: 'Even thermal pad compression, zero scorching, clean silver solder fillets.'
+        museVisualRepair: 'Even thermal pad compression, zero scorching, clean silver solder fillets.',
+        reasoningTrace: '• Visual Telemetry: High-side power MOSFET Q4 at coordinates [62%, 38%].\n• Optical Inspection: Discoloration halo on PCB silkscreen substrate extending 4.2mm from the drain tab; micro-voiding visible along the solder perimeter.\n• Physics & Electronics Reasoning: Thermal resistance has degraded due to dried silicone pad beneath heatsink. Junction temperature exceeds 105°C under continuous switching load.\n• Resolution Vector: Unclamp VRM heatsink, degrease mating faces with IPA, and apply high-conductivity 12 W/mK silicone thermal pad cut to size.'
       },
       {
         id: 'choke_l1',
@@ -94,7 +96,8 @@ export const PRESET_SCENARIOS = [
           'Ensure mechanical adhesion to PCB is firm.'
         ],
         targetSpec: 'Pulse Engineering Sealed Choke 0.82μH, DCR 1.8mΩ max.',
-        museVisualRepair: 'Optimal condition verified.'
+        museVisualRepair: 'Optimal condition verified.',
+        reasoningTrace: '• Visual Telemetry: Shielded ferrite choke L1 at coordinates [50%, 65%].\n• Optical Inspection: Zero crack propagation across molded ferrite body; solder fillets display 45° concave wetting meniscus meeting IPC Class 3 specs.\n• Physics & Electronics Reasoning: Inductance nominal at 0.82μH. Zero magnetostriction delamination or core saturation observed.\n• Resolution Vector: Component healthy and within tolerance. No replacement required.'
       }
     ]
   },
@@ -136,7 +139,8 @@ export const PRESET_SCENARIOS = [
           'Re-install clean silicone thermal insulator sock.'
         ],
         targetSpec: 'E3D V6 Genuine Nozzle or Bondtech CHT 0.4mm.',
-        museVisualRepair: 'Polished gold brass nozzle face with clean 0.400mm circular bore, zero molten residue.'
+        museVisualRepair: 'Polished gold brass nozzle face with clean 0.400mm circular bore, zero molten residue.',
+        reasoningTrace: '• Visual Telemetry: Extruder nozzle N1 at coordinates [50%, 78%].\n• Optical Inspection: Severe carbonized plastic crusting around 0.4mm orifice; molten filament back-leakage along M6 threads above the heater block.\n• Mechanical Reasoning: Thermal expansion gap between nozzle shoulder and heatbreak throat allowed pressurized polymer to weep into thread voids.\n• Resolution Vector: Perform 230°C hot-tighten teardown, clean M6 threads with brass wire brush, install new hardened nozzle at 250°C torqued to 2.5 Nm.'
       },
       {
         id: 'thermistor_th1',
@@ -166,7 +170,8 @@ export const PRESET_SCENARIOS = [
           'Run PID Autotune calibration cycle: M303 E0 S210 C8.'
         ],
         targetSpec: 'Semitec 104NT-4-R025H42G Cartridge Thermistor (Max 300°C).',
-        museVisualRepair: 'Fully sleeved fiberglass leads secured with zero pinch or exposed copper.'
+        museVisualRepair: 'Fully sleeved fiberglass leads secured with zero pinch or exposed copper.',
+        reasoningTrace: '• Visual Telemetry: NTC thermistor sensor TH1 at coordinates [68%, 55%].\n• Optical Inspection: Fiberglass sleeving has migrated backward, exposing bare conductor leads within 1.2mm of aluminum heater block clamping screw.\n• Electrical Safety Reasoning: Risk of intermittent short to ground inducing temperature read errors or firmware thermal runaway trigger.\n• Resolution Vector: Isolate power, refit high-temp silicone sleeving up to bead neck, re-clamp gently without crushing glass bead, and execute M303 PID autotune.'
       },
       {
         id: 'heatbreak_hb1',
@@ -189,7 +194,8 @@ export const PRESET_SCENARIOS = [
         tools: ['Thermal Paste (Boron Nitride)'],
         steps: ['Ensure 30mm heatsink fan is spinning at full 100% RPM during active printing.'],
         targetSpec: 'Slice Engineering Copperhead / Phaetus Dragon Bi-Metal Heatbreak.',
-        museVisualRepair: 'Clean heatsink transition zone.'
+        museVisualRepair: 'Clean heatsink transition zone.',
+        reasoningTrace: '• Visual Telemetry: Bi-metal heatbreak HB1 at coordinates [50%, 38%].\n• Optical Inspection: Titanium thin-wall neck shows clean metallurgical bond to copper heatsink base; zero discoloration or filament creep in cold zone.\n• Thermal Reasoning: Boundary layer cooling is optimal. Thermal barrier prevents premature polymer softening before melt chamber.\n• Resolution Vector: Normal operational condition verified.'
       }
     ]
   },
@@ -231,7 +237,8 @@ export const PRESET_SCENARIOS = [
           'Reconnect battery ground and measure charging voltage at idle (should read 14.2V - 14.6V).'
         ],
         targetSpec: 'OEM Heavy Duty Tin-Plated Copper Ring Terminal 4-AWG.',
-        museVisualRepair: 'Polished bright metallic copper ring lug sealed with transparent dielectric coat under red rubber boot.'
+        museVisualRepair: 'Polished bright metallic copper ring lug sealed with transparent dielectric coat under red rubber boot.',
+        reasoningTrace: '• Visual Telemetry: Alternator B+ output terminal at coordinates [42%, 45%].\n• Optical Inspection: Heavy turquoise copper sulfate crystallization encrusting the terminal ring lug and stud.\n• Electrochemical Reasoning: Atmospheric moisture ingress combined with 130A galvanic action caused surface copper oxidation, generating a 1.4V contact drop and starving the battery of charging current.\n• Resolution Vector: Disconnect negative battery ground, neutralize sulfate with warm bicarbonate solution, abrade to bare copper, torque to 12 Nm, and seal with dielectric grease under rubber boot.'
       },
       {
         id: 'serp_belt',
@@ -261,7 +268,8 @@ export const PRESET_SCENARIOS = [
           'Release tensioner slowly and verify indicator arrow is within normal tension window.'
         ],
         targetSpec: 'Continental ContiTech / Gates Micro-V 6PK1195 EPDM.',
-        museVisualRepair: 'Flexible smooth matte black EPDM belt with deep intact V-ribs seated squarely in pulley channels.'
+        museVisualRepair: 'Flexible smooth matte black EPDM belt with deep intact V-ribs seated squarely in pulley channels.',
+        reasoningTrace: '• Visual Telemetry: Serpentine accessory belt at coordinates [62%, 65%].\n• Optical Inspection: Transverse rib micro-cracking measured at 3.4 cracks/inch; outer tensile cords exhibit edge fraying.\n• Mechanical Reasoning: Polymer plasticizer depletion after 60,000 km duty cycle combined with minor pulley misalignment accelerates fatigue.\n• Resolution Vector: De-tension with 15mm breaker bar, inspect idler bearings, and install new EPDM micro-V 6PK1195 belt.'
       }
     ]
   }
