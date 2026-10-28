@@ -2,14 +2,16 @@ import React, { useState } from 'react';
 import {
   AlertTriangle, CheckCircle2, ShieldAlert, Wrench, Sparkles,
   Layers, Activity, ArrowRight, Download, Share2, CheckSquare, Square,
-  Cpu, ChevronDown
+  Cpu, ChevronDown, MessageSquare
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
+import ChatCopilot from './ChatCopilot';
 
-export default function DiagnosticSidebar({ part, onExportReport, isLiveInferencing }) {
+export default function DiagnosticSidebar({ part, scenario, onExportReport, isLiveInferencing }) {
   const [completedSteps, setCompletedSteps] = useState({});
   const [showTarget, setShowTarget] = useState(false);
   const [showReasoning, setShowReasoning] = useState(false);
+  const [activeTab, setActiveTab] = useState('teardown');
 
   if (!part) {
     return (
@@ -84,10 +86,42 @@ export default function DiagnosticSidebar({ part, onExportReport, isLiveInferenc
             />
           </div>
         </div>
+
+        {/* Tab Switcher */}
+        <div className="flex p-1 bg-slate-100 rounded-xl mt-3 text-xs font-semibold">
+          <button
+            onClick={() => setActiveTab('teardown')}
+            className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+              activeTab === 'teardown'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <CheckSquare className="w-3.5 h-3.5 text-teal-600" />
+            <span>Teardown & Steps</span>
+          </button>
+          <button
+            onClick={() => setActiveTab('chat')}
+            className={`flex-1 py-1.5 rounded-lg flex items-center justify-center gap-1.5 transition-all ${
+              activeTab === 'chat'
+                ? 'bg-white text-slate-900 shadow-xs'
+                : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
+            <span>Ask AI Copilot</span>
+          </button>
+        </div>
       </div>
 
-      {/* Scrollable Body */}
-      <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
+      {activeTab === 'chat' ? (
+        <div className="flex-1 overflow-hidden">
+          <ChatCopilot part={part} scenario={scenario} />
+        </div>
+      ) : (
+        <>
+          {/* Scrollable Body */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-5 custom-scrollbar">
         {/* Live Cloud Inference Status Banner */}
         {isLiveInferencing && (
           <div className="p-3 bg-teal-50 border border-teal-200 rounded-xl flex items-center gap-3 animate-pulse">
@@ -255,6 +289,8 @@ export default function DiagnosticSidebar({ part, onExportReport, isLiveInferenc
           <Share2 className="w-4 h-4" />
         </button>
       </div>
+        </>
+      )}
     </div>
   );
 }

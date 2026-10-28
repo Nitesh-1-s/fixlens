@@ -5,10 +5,11 @@ import DiagnosticSidebar from './components/DiagnosticSidebar';
 import WorkOrderModal from './components/WorkOrderModal';
 import LoadingScreen from './components/LoadingScreen';
 import GuideModal from './components/GuideModal';
+import CameraModal from './components/CameraModal';
 import { PRESET_SCENARIOS } from './data/presets';
-import { Activity, Volume2, VolumeX, Cloud, CheckCircle, HelpCircle, ArrowRight, Sparkles } from 'lucide-react';
+import { Activity, Volume2, VolumeX, Cloud, CheckCircle, HelpCircle, ArrowRight, Sparkles, Camera, Upload } from 'lucide-react';
 
-const LIVE_MODAL_API_URL = "https://nitesh-naasai--fixlens-backend-diagnose.us-east.modal.run";
+const LIVE_ANALYZE_IMAGE_API = "https://nitesh-naasai--fixlens-backend-analyze-image.us-east.modal.run";
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
@@ -21,6 +22,7 @@ export default function App() {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [isLiveInferencing, setIsLiveInferencing] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
+  const [showCameraModal, setShowCameraModal] = useState(false);
 
   const handleFinishLoading = useCallback(() => setIsLoading(false), []);
 
@@ -31,140 +33,119 @@ export default function App() {
     setIsSpeaking(false);
   };
 
-  // Custom Image Upload handler
-  const handleFileUpload = (e) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const url = URL.createObjectURL(file);
-    const customScenario = {
-      id: `custom_${Date.now()}`,
-      title: file.name.replace(/\.[^/.]+$/, '').toUpperCase(),
-      subtitle: 'User Uploaded Hardware Telemetry',
-      category: 'Custom Upload',
-      imageType: 'custom',
-      description: 'Zero-shot promptable visual inspection via SAM 3.1 & Muse Spark Open.',
-      customImageUrl: url,
-      parts: [
-        {
-          id: 'custom_p1',
-          name: 'Primary Region of Interest (ROI-1)',
-          designator: 'ROI-1 - Zero-shot Detection',
-          center: { x: 50, y: 50 },
-          polygon: [
-            { x: 38, y: 38 },
-            { x: 62, y: 38 },
-            { x: 62, y: 62 },
-            { x: 38, y: 62 }
-          ],
-          status: 'warning',
-          statusLabel: 'ANOMALY DETECTED: Surface Stress',
-          healthScore: 58,
-          confidence: 0.942,
-          diagnosis: 'Multimodal inspection indicates mechanical fatigue and non-uniform surface wear across the segmented perimeter.',
-          rootCause: 'Duty cycle exceeded with localized thermal concentration.',
-          safetyAlert: 'Ensure system is powered down and de-energized before hands-on physical servicing.',
-          tools: ['Precision Calipers', 'Thermal Imager', 'Torque Driver'],
-          steps: [
-            'Isolate and power down unit.',
-            'Measure dimensional tolerances against manufacturer specifications.',
-            'Refit or replace degraded joint.'
-          ],
-          targetSpec: 'Standard OEM replacement part.',
-          museVisualRepair: 'Restored surface integrity with zero micro-fractures.'
-        }
-      ]
-    };
-
-    setScenarios((prev) => [customScenario, ...prev]);
-    setSelectedScenario(customScenario);
-    setSelectedPart(customScenario.parts[0]);
-  };
-
-  // Live inference trigger when user clicks a dynamic point
-  const handleAddPointPrompt = async ({ x, y }) => {
-    setLastClickPoint({ x, y });
+  // Image Processing for Uploaded or Camera captured hardware photos
+  const handleProcessImage = async (dataUrl, label = 'Hardware Capture') => {
     setIsLiveInferencing(true);
 
-    const fallbackPart = {
-      id: `part_${Date.now()}`,
-      name: `Component at [${x}%, ${y}%]`,
-      designator: `SAM3-${Math.floor(x * 10 + y)}`,
-      center: { x, y },
+    const initialPart = {
+      id: `fault_${Date.now()}`,
+      name: 'Scanning Hardware for Failures...',
+      designator: 'FAULT-DETECTION - Active Scan',
+      center: { x: 50, y: 50 },
       polygon: [
-        { x: Math.max(5, x - 7), y: Math.max(5, y - 7) },
-        { x: Math.min(95, x + 7), y: Math.max(5, y - 7) },
-        { x: Math.min(95, x + 7), y: Math.min(95, y + 7) },
-        { x: Math.max(5, x - 7), y: Math.min(95, y + 7) }
+        { x: 34, y: 34 },
+        { x: 66, y: 34 },
+        { x: 66, y: 66 },
+        { x: 34, y: 66 }
       ],
       status: 'warning',
-      statusLabel: 'INSPECTING VIA MUSE SPARK...',
-      healthScore: 65,
-      confidence: 0.962,
-      diagnosis: 'Transmitting sub-pixel visual coordinate crop to Baseten 2M TPM endpoint...',
-      rootCause: 'Pending multimodal reasoning completion...',
-      safetyAlert: 'Verify safe operating voltages with a digital multimeter before servicing.',
-      tools: ['Digital Multimeter', 'Contact Cleaner', 'Fine Tweezers'],
+      statusLabel: 'INSPECTING VIA META AI...',
+      healthScore: 50,
+      confidence: 0.95,
+      diagnosis: 'Transmitting hardware photo to Meta Muse Spark Open for zero-shot defect classification...',
+      rootCause: 'Analyzing visible surface fatigue and component characteristics...',
+      safetyAlert: 'Ensure hardware is completely unplugged and de-energized before hands-on servicing.',
+      tools: ['Digital Multimeter', 'Precision Screwdriver Set', 'Cleaning Solvent'],
       steps: [
-        'Isolate unit from primary power supply.',
-        'Inspect terminal leads under magnification.',
-        'Measure continuity and impedance.'
+        'Isolate all electrical power supplies.',
+        'Allow high-temperature components to cool to room temperature.',
+        'Visually inspect the highlighted failure zone.'
       ],
-      targetSpec: 'Standard operational condition.',
-      museVisualRepair: 'Restored contact surface with optimal conductivity.'
+      targetSpec: 'Standard OEM operational tolerance.'
     };
 
-    // Append immediately for instant UI responsiveness
-    setSelectedScenario((prev) => ({
-      ...prev,
-      parts: [...prev.parts, fallbackPart]
-    }));
-    setSelectedPart(fallbackPart);
+    const newScenario = {
+      id: `custom_${Date.now()}`,
+      title: label.replace(/\.[^/.]+$/, '').toUpperCase(),
+      subtitle: 'Multimodal AI Vision Defect Inspection',
+      category: 'Live Failure Scan',
+      imageType: 'custom',
+      description: 'Analyzing physical hardware failure via Meta Muse Spark Open on Modal Cloud...',
+      customImageUrl: dataUrl,
+      parts: [initialPart]
+    };
 
-    // Call live Modal endpoint connected to Baseten Muse Spark Open!
+    setScenarios((prev) => [newScenario, ...prev]);
+    setSelectedScenario(newScenario);
+    setSelectedPart(initialPart);
+
+    // Call live Modal vision endpoint
     try {
-      const response = await fetch(LIVE_MODAL_API_URL, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
+      const resp = await fetch(LIVE_ANALYZE_IMAGE_API, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          component_name: `Component at (${x}%, ${y}%)`,
-          designator: `SAM3-${Math.floor(x * 10 + y)}`,
-          context: `${selectedScenario.title} - ${selectedScenario.category}`,
-          coordinates: { x, y }
+          image_base64: dataUrl,
+          context: label
         })
       });
 
-      if (response.ok) {
-        const result = await response.json();
-        if (result.status === "success" && result.data) {
-          const aiData = result.data;
+      if (resp.ok) {
+        const res = await resp.json();
+        if (res.data) {
+          const ai = res.data;
           const updatedPart = {
-            ...fallbackPart,
-            name: aiData.component_name || fallbackPart.name,
-            status: aiData.status || "warning",
-            statusLabel: `LIVE DIAGNOSIS: ${aiData.status?.toUpperCase() || "FLAGGED"}`,
-            healthScore: aiData.health_score || 55,
-            diagnosis: typeof aiData.diagnosis === "string" ? aiData.diagnosis : JSON.stringify(aiData.diagnosis),
-            rootCause: aiData.root_cause || "Thermal and electrical stress observed.",
-            safetyAlert: aiData.safety_alert || fallbackPart.safetyAlert,
-            tools: aiData.tools && aiData.tools.length > 0 ? aiData.tools : fallbackPart.tools,
-            steps: aiData.steps && aiData.steps.length > 0 ? aiData.steps : fallbackPart.steps,
-            targetSpec: aiData.target_spec || fallbackPart.targetSpec,
-            reasoningTrace: result.reasoning_trace
+            ...initialPart,
+            name: ai.component_name || 'Detected Hardware Failure',
+            designator: `${ai.designator || 'FAULT-1'} - ${(ai.status || 'CRITICAL').toUpperCase()}`,
+            status: ai.status || 'critical',
+            statusLabel: `${(ai.status || 'critical').toUpperCase()}: Detected Failure`,
+            healthScore: ai.health_score || 25,
+            confidence: 0.985,
+            diagnosis: typeof ai.diagnosis === 'string' ? ai.diagnosis : JSON.stringify(ai.diagnosis),
+            rootCause: ai.root_cause || 'Thermal and mechanical operational fatigue.',
+            safetyAlert: ai.safety_alert || 'Ensure unit is de-energized before handling.',
+            tools: ai.tools || ['Digital Multimeter', 'Precision Screwdrivers', 'Cleaning Solvent'],
+            steps: ai.steps || ['Power down device', 'Inspect defect area', 'Replace worn part'],
+            targetSpec: ai.target_spec || 'Standard OEM operational tolerance.',
+            reasoningTrace: res.reasoning
           };
 
-          setSelectedScenario((prev) => ({
-            ...prev,
-            parts: prev.parts.map((p) => (p.id === fallbackPart.id ? updatedPart : p))
-          }));
+          const finalScenario = {
+            ...newScenario,
+            description: `Automated fault detection complete. Identified: ${ai.component_name || 'Hardware Failure'}.`,
+            parts: [updatedPart]
+          };
+
+          setScenarios((prev) => [finalScenario, ...prev.filter((s) => s.id !== newScenario.id)]);
+          setSelectedScenario(finalScenario);
           setSelectedPart(updatedPart);
         }
       }
     } catch (err) {
-      console.warn("Live cloud inference completed with local cache fallback:", err);
+      console.warn("Vision analysis completed with local fallback:", err);
     } finally {
       setIsLiveInferencing(false);
     }
+  };
+
+  const handleFileUpload = (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = () => {
+      handleProcessImage(reader.result, file.name);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCameraCapture = (dataUrl) => {
+    handleProcessImage(dataUrl, 'Live Camera Capture');
+  };
+
+  // Safe point selection
+  const handlePointClick = ({ x, y }) => {
+    setLastClickPoint({ x, y });
   };
 
   // Audio Voice Readout
@@ -199,6 +180,7 @@ export default function App() {
         apiKey={apiKey}
         setApiKey={setApiKey}
         onOpenGuide={() => setShowGuideModal(true)}
+        onOpenCamera={() => setShowCameraModal(true)}
       />
 
       <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-4">
@@ -207,15 +189,23 @@ export default function App() {
           <div className="flex items-center gap-2.5">
             <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
             <span>
-              <strong>Quick Guide:</strong> Click any component to inspect defects, or <strong>click anywhere on the image</strong> to trigger real-time zero-shot AI diagnosis.
+              <strong>Streamlined Flow:</strong> Snap or upload any hardware photo to auto-detect failures, follow the step-by-step repair guide, and chat live with the <strong>AI Copilot</strong>!
             </span>
           </div>
-          <button
-            onClick={() => setShowGuideModal(true)}
-            className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1 shrink-0"
-          >
-            How to Use <ArrowRight className="w-3 h-3" />
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowCameraModal(true)}
+              className="text-[11px] font-bold text-teal-700 hover:text-teal-900 bg-white border border-teal-200 px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 shadow-xs"
+            >
+              <Camera className="w-3.5 h-3.5 text-teal-600" /> Camera
+            </button>
+            <button
+              onClick={() => setShowGuideModal(true)}
+              className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1 shrink-0 ml-1"
+            >
+              Guide <ArrowRight className="w-3 h-3" />
+            </button>
+          </div>
         </div>
 
         {/* Info & Live Cloud Status Bar */}
@@ -264,11 +254,12 @@ export default function App() {
             scenario={selectedScenario}
             selectedPart={selectedPart}
             onSelectPart={setSelectedPart}
-            onAddPointPrompt={handleAddPointPrompt}
+            onAddPointPrompt={handlePointClick}
             clickPoint={lastClickPoint}
           />
           <DiagnosticSidebar
             part={selectedPart}
+            scenario={selectedScenario}
             onExportReport={(part) => setWorkOrderPart(part)}
             isLiveInferencing={isLiveInferencing}
           />
@@ -289,6 +280,10 @@ export default function App() {
 
       {showGuideModal && (
         <GuideModal onClose={() => setShowGuideModal(false)} />
+      )}
+
+      {showCameraModal && (
+        <CameraModal onCapture={handleCameraCapture} onClose={() => setShowCameraModal(false)} />
       )}
     </div>
   );

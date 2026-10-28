@@ -53,16 +53,19 @@ export default function HardwareCanvas({
 
     setPingEffect({ x: xPct, y: yPct, id: Date.now() });
 
-    // Check if clicked an existing part
-    const clickedPart = scenario.parts.find((part) => {
+    // Check if clicked an existing part or near a part
+    let closestPart = null;
+    let minDist = Infinity;
+    scenario.parts.forEach((part) => {
       const dist = Math.hypot(part.center.x - xPct, part.center.y - yPct);
-      return dist < 12;
+      if (dist < minDist) {
+        minDist = dist;
+        closestPart = part;
+      }
     });
 
-    if (clickedPart) {
-      onSelectPart(clickedPart);
-    } else {
-      onAddPointPrompt({ x: xPct, y: yPct });
+    if (closestPart && minDist < 28) {
+      onSelectPart(closestPart);
     }
   };
 

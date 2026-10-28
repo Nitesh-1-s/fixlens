@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Key, Check, X, ChevronDown, HelpCircle } from 'lucide-react';
+import { Upload, Key, Check, X, ChevronDown, HelpCircle, Camera } from 'lucide-react';
 import Logo from './Logo';
 
 export default function Navbar({
@@ -9,7 +9,8 @@ export default function Navbar({
   onFileUpload,
   apiKey,
   setApiKey,
-  onOpenGuide
+  onOpenGuide,
+  onOpenCamera
 }) {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [tempKey, setTempKey] = useState(apiKey || '');
@@ -56,10 +57,20 @@ export default function Navbar({
               );
             })}
 
+            {/* Live Camera Button */}
+            <button
+              onClick={onOpenCamera}
+              className="px-3 py-2 rounded-lg text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all flex items-center gap-1.5"
+              title="Capture with Webcam / Phone Camera"
+            >
+              <Camera className="w-3.5 h-3.5 text-teal-600" />
+              <span>Camera</span>
+            </button>
+
             {/* Upload */}
-            <label className="px-4 py-2 rounded-lg text-xs font-medium text-slate-400 hover:text-teal-600 hover:bg-teal-50 transition-all flex items-center gap-1.5 cursor-pointer border border-dashed border-slate-200 hover:border-teal-300">
-              <Upload className="w-3.5 h-3.5" />
-              Upload
+            <label className="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-700 hover:text-teal-700 bg-slate-50 hover:bg-slate-100 transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200 hover:border-teal-300">
+              <Upload className="w-3.5 h-3.5 text-teal-600" />
+              <span>Upload Photo</span>
               <input
                 type="file"
                 accept="image/*"
