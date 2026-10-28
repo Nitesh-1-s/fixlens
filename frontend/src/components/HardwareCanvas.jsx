@@ -245,21 +245,21 @@ export default function HardwareCanvas({
                   />
 
                   {/* Clean Component Silkscreen Tag */}
-                  <g transform={`translate(${part.center.x - 7}, ${part.center.y - 6})`}>
+                  <g transform={`translate(${part.center.x - 8}, ${part.center.y - 6})`}>
                     <rect
-                      width="14"
-                      height="3.4"
-                      rx="0.6"
+                      width="16"
+                      height="3.6"
+                      rx="0.8"
                       fill="#FFFFFF"
                       stroke={color}
                       strokeWidth="0.5"
-                      className="drop-shadow-md"
+                      className="drop-shadow-sm"
                     />
                     <text
-                      x="7"
-                      y="2.4"
+                      x="8"
+                      y="2.5"
                       fill="#0F172A"
-                      fontSize="1.9"
+                      fontSize="1.8"
                       fontWeight="bold"
                       fontFamily="monospace"
                       textAnchor="middle"
