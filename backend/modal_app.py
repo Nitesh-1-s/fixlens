@@ -148,8 +148,10 @@ def diagnose(req: DiagnoseRequest) -> Dict[str, Any]:
 class ChatRequest(BaseModel):
     message: str
     component_name: Optional[str] = "General Hardware"
+    product_name: Optional[str] = "Physical Hardware Device"
     context: Optional[str] = ""
     history: Optional[List[Dict[str, str]]] = []
+    image_base64: Optional[str] = None
 
 @app.function(image=image, secrets=secrets)
 @modal.fastapi_endpoint(method="POST")
@@ -163,16 +165,35 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     client = OpenAI(base_url=base_url, api_key=api_key)
 
     system_prompt = (
-        "You are FixLens Copilot, an expert physical hardware, appliance, and electronics repair assistant powered by Meta Muse Spark Open. "
-        "The user is actively inspecting and repairing physical machinery. "
-        f"Active component: {req.component_name}. Context: {req.context}. "
-        "Provide helpful, practical, clear step-by-step guidance. Be encouraging and emphasize safety precautions."
+        "You are FixLens Copilot, an approachable, highly knowledgeable hardware repair copilot powered by Meta Muse Spark Open. "
+        "IMPORTANT: The user may be a complete beginner who does not know anything about hardware, electronics, or tools, "
+        "and does not even know the name of the product or what is broken. "
+        f"Device / Project being inspected: '{req.product_name}'. "
+        f"Identified Component & Defect Context: '{req.component_name}' — {req.context}. "
+        "Guidelines for your response: "
+        "1. Mention the identified product and defect warmly in plain English so the user knows exactly what they are looking at. "
+        "2. Explain what the item does in everyday life (no confusing jargon without explaining it). "
+        "3. State clearly whether it is safe for a beginner to touch or fix, and what safety step comes first. "
+        "4. Tell them what common household or inexpensive tools they need. "
+        "5. Walk them through the repair step-by-step with clear, comforting, easy-to-follow bullet points."
     )
 
     messages = [{"role": "system", "content": system_prompt}]
     for h in req.history[-6:]:
         messages.append({"role": h.get("role", "user"), "content": h.get("content", "")})
-    messages.append({"role": "user", "content": req.message})
+
+    # If an image was passed to chat, send as multimodal message
+    if req.image_base64:
+        img_url = req.image_base64 if req.image_base64.startswith("data:") else f"data:image/jpeg;base64,{req.image_base64}"
+        messages.append({
+            "role": "user",
+            "content": [
+                {"type": "text", "text": req.message},
+                {"type": "image_url", "image_url": {"url": img_url}}
+            ]
+        })
+    else:
+        messages.append({"role": "user", "content": req.message})
 
     try:
         response = client.chat.completions.create(
@@ -217,7 +238,12 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
     prompt = (
         "You are FixLens, an industrial-grade multimodal hardware and physical defect diagnostic intelligence. "
         "Analyze this hardware photograph with precision. Locate the primary failing component, defect, or wear area. "
+        "IMPORTANT: The user may be a complete beginner who does not know what product or machine this is. "
         "Return a strictly valid JSON response containing these exact keys: "
+        "'device_name' (identifies the overall machine, appliance, or product, e.g. 'Automotive Alternator 12V Power System' or 'Direct-Drive 3D Printer Hotend' or 'Desktop PC Motherboard Power Delivery'), "
+        "'layman_summary' (1-2 clear, simple sentences explaining what this device does in everyday life and what the failure means), "
+        "'layman_fix_guide' (1-2 sentences summarizing what a non-expert needs to do to fix it), "
+        "'beginner_friendly' (e.g. 'Yes — DIY friendly (baking soda & wrench)' or 'Moderate — basic soldering needed' or 'Professional Recommended'), "
         "'component_name' (specific component name, e.g. '1500uF 6.3V Bulging Electrolytic Capacitor' or 'Corroded Alternator B+ Stud Terminal'), "
         "'designator' (schematic/system designator, e.g. 'C12', 'Q4', 'B+ Post', 'N1'), "
         "'status' ('critical' or 'warning'), "
@@ -233,7 +259,7 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
         "'tools' (list of 3-5 specific tools with specs, e.g. 'Soldering Station (360°C chisel tip)', '10mm Insulated Wrench', 'Digital Multimeter'), "
         "'steps' (list of 4-6 sequential, user-friendly, highly actionable repair steps), "
         "'target_spec' (1 sentence OEM tolerance and target spec). "
-        "Keep descriptions concise and factual (under 250 words total)."
+        "Keep descriptions concise and factual (under 280 words total)."
     )
 
     try:
@@ -270,6 +296,10 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
             "status": "fallback",
             "error": str(e),
             "data": {
+                "device_name": "Physical Hardware Assembly",
+                "layman_summary": "This device shows an isolated mechanical or electrical fault area. It requires basic de-energization and cleaning or component swap.",
+                "layman_fix_guide": "Disconnect all power cords first, clean surface dust/corrosion, and inspect for loose mounting hardware.",
+                "beginner_friendly": "Moderate — Standard household tools and careful inspection needed.",
                 "component_name": "Physical Failure / Defect Zone",
                 "designator": "ROI-1",
                 "status": "critical",

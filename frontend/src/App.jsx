@@ -172,10 +172,15 @@ export default function App() {
             { x: Math.round(xMin), y: Math.round(yMax) }
           ];
 
+          const identifiedDevice = ai.device_name || 'Hardware Assembly';
           const updatedPart = {
             ...initialPart,
             name: ai.component_name || 'Detected Hardware Failure',
             designator: `${ai.designator || 'FAULT-1'} - ${(ai.status || 'CRITICAL').toUpperCase()}`,
+            deviceName: identifiedDevice,
+            laymanSummary: ai.layman_summary || 'Physical defect detected on device. Refer to the step-by-step beginner guide below to safely repair it.',
+            laymanFixGuide: ai.layman_fix_guide || 'De-energize device completely, clean the defect area, and replace or service the highlighted part.',
+            beginnerFriendly: ai.beginner_friendly || 'Moderate — Standard DIY precautions and basic tools required.',
             center: { x: centerX, y: centerY },
             polygon: accuratePolygon,
             status: ai.status || 'critical',
@@ -201,7 +206,9 @@ export default function App() {
 
           const finalScenario = {
             ...newScenario,
-            description: `Automated fault detection complete. Identified: ${ai.component_name || 'Hardware Failure'}.`,
+            title: identifiedDevice.toUpperCase(),
+            subtitle: ai.layman_summary || 'Multimodal AI Vision Defect Inspection',
+            description: `Automated fault detection complete. Identified: ${identifiedDevice} · Defect: ${ai.component_name || 'Hardware Failure'}.`,
             parts: [updatedPart]
           };
 

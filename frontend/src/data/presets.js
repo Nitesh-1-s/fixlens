@@ -14,6 +14,10 @@ export const PRESET_SCENARIOS = [
         id: 'cap_c12',
         name: 'Rubycon 1500μF 6.3V Bulging Capacitor (C12)',
         designator: 'C12 - VRM Vcore Electrolytic Filter',
+        deviceName: 'Desktop PC Motherboard Power Delivery (VRM)',
+        laymanSummary: 'This is your computer motherboard\'s main power station that converts power from your power supply to your CPU processor. When this capacitor bulges, your PC will randomly crash, blue-screen, or fail to boot.',
+        laymanFixGuide: 'Unplug power, desolder the swollen silver can with a soldering iron, and solder in a new $2 low-ESR capacitor matching the polarity stripe.',
+        beginnerFriendly: 'Moderate — Requires basic through-hole soldering (20-30 mins).',
         center: { x: 42, y: 43 },
         polygon: [
           { x: 36, y: 28 },
@@ -172,6 +176,10 @@ export const PRESET_SCENARIOS = [
         id: 'nozzle_n1',
         name: 'Extruder Brass Nozzle (0.4mm)',
         designator: 'N1 - M6 Standard Flow 0.4mm Brass Nozzle',
+        deviceName: '3D Printer Hotend & Extruder Assembly',
+        laymanSummary: 'This is the melting chamber of your 3D printer that melts plastic at 240°C and squirts it out through a tiny hole. When clogged or leaking, your 3D prints fail, layer lines break, or plastic blobs everywhere.',
+        laymanFixGuide: 'Heat the hotend to 250°C, unscrew the clogged golden brass tip with a 7mm wrench while holding the block, clean the threads with a wire brush, and install a fresh $3 nozzle.',
+        beginnerFriendly: 'Yes — Beginner DIY friendly (15-20 mins, use gloves because it\'s hot!).',
         center: { x: 51.5, y: 76 },
         polygon: [
           { x: 44, y: 64 },
@@ -330,6 +338,10 @@ export const PRESET_SCENARIOS = [
         id: 'alt_bplus',
         name: 'Alternator B+ Main Output Terminal',
         designator: 'B+ Post - 12V 130A Corroded Terminal',
+        deviceName: 'Car Alternator & 12V Charging System',
+        laymanSummary: 'This is your car\'s alternator — the generator that charges your 12V battery and powers headlights, radio, and A/C while driving. This corroded terminal causes battery drain, dashboard warning lights, or sudden no-starts.',
+        laymanFixGuide: 'Disconnect the black car battery cable first, dissolve the green crust using warm baking soda water and a wire brush, tighten the nut with a 13mm wrench, and seal with grease under a rubber boot.',
+        beginnerFriendly: 'Yes — Super easy DIY fix (25 mins with common household baking soda and a basic wrench).',
         center: { x: 69, y: 43 },
         polygon: [
           { x: 63, y: 36 },

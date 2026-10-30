@@ -2,7 +2,8 @@ import React, { useState } from 'react';
 import {
   AlertTriangle, CheckCircle2, ShieldAlert, Wrench, Sparkles,
   Layers, Activity, ArrowRight, Download, Share2, CheckSquare, Square,
-  Cpu, ChevronDown, MessageSquare, Clock, DollarSign, Zap, Gauge, Check
+  Cpu, ChevronDown, MessageSquare, Clock, DollarSign, Zap, Gauge, Check,
+  HelpCircle, BookOpen, Info
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import ChatCopilot from './ChatCopilot';
@@ -150,6 +151,42 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
                 </div>
               </div>
             )}
+
+            {/* What is this Product & Beginner Guide (For users who know nothing) */}
+            <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-teal-800 font-mono flex items-center gap-1.5">
+                  <HelpCircle className="w-3.5 h-3.5 text-teal-600" />
+                  What Is This & What To Do
+                </span>
+                <span className="px-2 py-0.5 rounded text-[9px] font-mono font-semibold bg-white border border-slate-200 text-slate-700">
+                  Beginner Guide
+                </span>
+              </div>
+
+              <div>
+                <div className="text-[11px] font-bold text-slate-900 flex items-center gap-1.5">
+                  <span className="text-slate-500 font-normal">Identified Device:</span>
+                  <span className="text-teal-700 font-semibold">{part.deviceName || scenario.title}</span>
+                </div>
+                <p className="text-xs text-slate-600 leading-relaxed mt-1">
+                  {part.laymanSummary || 'Physical defect detected on device. If you are new to repairing machinery, follow the simple steps below or ask the AI Copilot for advice.'}
+                </p>
+              </div>
+
+              <div className="pt-2 border-t border-slate-200/80 grid grid-cols-1 sm:grid-cols-2 gap-2 text-[11px]">
+                <div className="p-2 bg-white rounded-lg border border-slate-100">
+                  <div className="text-[9px] font-mono text-slate-400 uppercase font-semibold">Can A Beginner Fix It?</div>
+                  <div className="text-slate-800 font-medium mt-0.5 text-xs">{part.beginnerFriendly || 'Yes — DIY friendly with basic tools'}</div>
+                </div>
+                <div className="p-2 bg-white rounded-lg border border-slate-100">
+                  <div className="text-[9px] font-mono text-slate-400 uppercase font-semibold">Quick Action Plan</div>
+                  <div className="text-slate-800 font-medium mt-0.5 text-xs truncate" title={part.laymanFixGuide}>
+                    {part.laymanFixGuide || 'Power off device, clean area, replace part.'}
+                  </div>
+                </div>
+              </div>
+            </div>
 
             {/* Industrial Repair Metrics Bar */}
             <div className="grid grid-cols-2 gap-2 bg-slate-50/70 p-3 rounded-xl border border-slate-200">
