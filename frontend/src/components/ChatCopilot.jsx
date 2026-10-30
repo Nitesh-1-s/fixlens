@@ -133,8 +133,8 @@ export default function ChatCopilot({ part, scenario }) {
               <div
                 className={`max-w-[85%] rounded-2xl p-3 text-xs leading-relaxed ${
                   isUser
-                    ? 'bg-teal-600 text-white font-medium rounded-tr-xs'
-                    : 'bg-slate-50 text-slate-800 border border-slate-200/80 rounded-tl-xs'
+                    ? 'bg-teal-600 text-white font-medium rounded-tr-sm'
+                    : 'bg-slate-50 text-slate-800 border border-slate-200/80 rounded-tl-sm'
                 }`}
               >
                 <div className="whitespace-pre-wrap">{m.content}</div>
@@ -154,7 +154,7 @@ export default function ChatCopilot({ part, scenario }) {
             <div className="w-7 h-7 rounded-lg bg-slate-100 text-slate-700 border border-slate-200 flex items-center justify-center shrink-0">
               <Bot className="w-4 h-4 text-teal-600 animate-spin" />
             </div>
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-xs p-3 text-xs text-slate-500 flex items-center gap-2">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl rounded-tl-sm p-3 text-xs text-slate-500 flex items-center gap-2">
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce [animation-delay:0.2s]"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce [animation-delay:0.4s]"></span>

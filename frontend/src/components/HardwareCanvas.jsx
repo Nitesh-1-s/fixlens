@@ -176,7 +176,7 @@ export default function HardwareCanvas({
           onClick={handleClick}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative max-w-full max-h-[620px] rounded-xl overflow-hidden shadow-xl border border-slate-200/80 bg-slate-950 z-10"
+          className="relative max-w-full max-h-[620px] rounded-xl overflow-hidden shadow-xs border border-slate-200 bg-slate-950 z-10"
           style={{
             transform: `scale(${zoom})`,
             transformOrigin: 'center center',
@@ -310,7 +310,7 @@ export default function HardwareCanvas({
           {/* Hover Tooltip (Clean White Card) */}
           {hoveredPart && (
             <div
-              className="absolute z-30 pointer-events-none px-3.5 py-2 bg-white border border-slate-200 rounded-xl shadow-2xl text-xs"
+              className="absolute z-30 pointer-events-none px-3.5 py-2 bg-white border border-slate-200 rounded-xl shadow-md text-xs"
               style={{
                 left: `${hoveredPart.center.x}%`,
                 top: `${hoveredPart.center.y + 8}%`,

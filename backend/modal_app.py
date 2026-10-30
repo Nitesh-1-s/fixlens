@@ -26,6 +26,33 @@ secrets = [
     })
 ]
 
+def parse_hardware_json(raw_text: str) -> Optional[Dict[str, Any]]:
+    clean = raw_text.strip()
+    if "```json" in clean:
+        clean = clean.split("```json")[1].split("```")[0].strip()
+    elif "```" in clean:
+        clean = clean.split("```")[1].split("```")[0].strip()
+
+    if "{" in clean:
+        start_idx = clean.find("{")
+        end_idx = clean.rfind("}") + 1 if "}" in clean else len(clean)
+        clean = clean[start_idx:end_idx]
+
+    # Attempt 1: Direct JSON parsing
+    try:
+        return json.loads(clean)
+    except Exception:
+        pass
+
+    # Attempt 2: Auto-repair unclosed string/bracket
+    for suffix in ['"}', '"]}', '"}', '}']:
+        try:
+            return json.loads(clean + suffix)
+        except Exception:
+            continue
+
+    return None
+
 class DiagnoseRequest(BaseModel):
     component_name: str
     designator: str
@@ -60,23 +87,17 @@ def diagnose(req: DiagnoseRequest) -> Dict[str, Any]:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            max_tokens=2048,
-            temperature=0.2
+            max_tokens=4096,
+            temperature=0.2,
+            timeout=45.0
         )
 
         msg = response.choices[0].message
         raw_content = msg.content or ""
         reasoning = getattr(msg, "reasoning_content", "") or ""
 
-        clean_json = raw_content
-        if "```json" in clean_json:
-            clean_json = clean_json.split("```json")[1].split("```")[0].strip()
-        elif "```" in clean_json:
-            clean_json = clean_json.split("```")[1].split("```")[0].strip()
-
-        try:
-            parsed = json.loads(clean_json)
-        except Exception:
+        parsed = parse_hardware_json(raw_content)
+        if not parsed:
             parsed = {
                 "diagnosis": raw_content or "Real-time AI diagnostic analysis complete.",
                 "root_cause": "Operational stress detected under load.",
@@ -178,7 +199,7 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
     prompt = (
         "You are FixLens, an expert physical hardware diagnostic vision intelligence. "
         "Analyze this hardware photograph. Identify the primary failing component or defect. "
-        "Return strictly valid JSON with keys: "
+        "Keep your output strictly in valid JSON format with keys: "
         "'component_name' (specific part name), 'designator' (part identifier), "
         "'status' ('critical' or 'warning'), 'health_score' (number 0-100), "
         "'diagnosis' (2-3 clear sentences describing the visible physical fault), "
@@ -186,7 +207,8 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
         "'safety_alert' (1 clear safety warning), "
         "'tools' (list of 3-5 specific tools), "
         "'steps' (list of 4-6 sequential, user-friendly repair steps), "
-        "'target_spec' (1 sentence OEM spec)."
+        "'target_spec' (1 sentence OEM spec). "
+        "Keep descriptions concise and factual (under 200 words total)."
     )
 
     try:
@@ -201,22 +223,22 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
                     ]
                 }
             ],
-            max_tokens=2048,
-            temperature=0.2
+            max_tokens=4096,
+            temperature=0.2,
+            timeout=45.0
         )
         msg = response.choices[0].message
         raw = msg.content or ""
-        clean = raw
-        if "```json" in clean:
-            clean = clean.split("```json")[1].split("```")[0].strip()
-        elif "```" in clean:
-            clean = clean.split("```")[1].split("```")[0].strip()
+        reasoning = getattr(msg, "reasoning_content", "") or ""
 
-        parsed = json.loads(clean)
+        parsed = parse_hardware_json(raw)
+        if not parsed:
+            raise ValueError(f"Unable to parse hardware JSON: {raw[:200]}")
+
         return {
             "status": "success",
             "data": parsed,
-            "reasoning": getattr(msg, "reasoning_content", "") or ""
+            "reasoning": reasoning
         }
     except Exception as e:
         return {

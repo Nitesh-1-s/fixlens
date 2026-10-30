@@ -42,9 +42,38 @@ export default function App() {
     setIsSpeaking(false);
   };
 
+  // Helper to optimize image size before cloud API transmission
+  const compressImage = (rawUrl, maxDim = 1280) => {
+    return new Promise((resolve) => {
+      const img = new Image();
+      img.onload = () => {
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0, w, h);
+        resolve(canvas.toDataURL('image/jpeg', 0.90));
+      };
+      img.onerror = () => resolve(rawUrl);
+      img.src = rawUrl;
+    });
+  };
+
   // Image Processing for Uploaded or Camera captured hardware photos
-  const handleProcessImage = async (dataUrl, label = 'Hardware Capture') => {
+  const handleProcessImage = async (rawUrl, label = 'Hardware Capture') => {
     setIsLiveInferencing(true);
+    const dataUrl = await compressImage(rawUrl);
 
     const initialPart = {
       id: `fault_${Date.now()}`,
