@@ -4,9 +4,7 @@ import Logo from './Logo';
 
 export default function UploadCameraEntry({
   onOpenCamera,
-  onFileUpload,
-  onSelectPreset,
-  presets
+  onFileUpload
 }) {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -111,56 +109,8 @@ export default function UploadCameraEntry({
         </div>
       </div>
 
-      {/* Demo Samples Section */}
-      <div className="max-w-4xl mx-auto w-full pt-6 border-t border-slate-200/80">
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono">
-            Or test with sample hardware:
-          </h3>
-          <span className="text-[11px] text-teal-600 font-semibold font-mono">
-            3 Pre-analyzed Scenarios
-          </span>
-        </div>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3.5">
-          {presets.slice(0, 3).map((preset) => {
-            const imgSrc =
-              preset.id === 'motherboard'
-                ? '/images/motherboard.png'
-                : preset.id === 'printer3d'
-                ? '/images/printer3d.png'
-                : '/images/automotive.png';
-
-            return (
-              <div
-                key={preset.id}
-                onClick={() => onSelectPreset(preset)}
-                className="group p-3 bg-white hover:bg-slate-50 border border-slate-200 hover:border-teal-400 rounded-2xl cursor-pointer transition-all flex items-center gap-3 shadow-xs hover:shadow-md"
-              >
-                <img
-                  src={imgSrc}
-                  alt={preset.title}
-                  className="w-14 h-14 rounded-xl object-cover border border-slate-200 group-hover:scale-105 transition-transform"
-                />
-                <div className="flex-1 min-w-0">
-                  <span className="text-[10px] font-mono font-semibold text-teal-600 uppercase block truncate">
-                    {preset.category}
-                  </span>
-                  <h4 className="text-xs font-bold text-slate-800 truncate group-hover:text-teal-700">
-                    {preset.title.split(' ').slice(0, 3).join(' ')}
-                  </h4>
-                  <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                    {preset.parts?.length || 1} components detected
-                  </p>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
       {/* Feature Pills */}
-      <div className="max-w-3xl mx-auto w-full mt-12 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
+      <div className="max-w-3xl mx-auto w-full mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
         <div className="p-3 bg-white rounded-xl border border-slate-100 flex flex-col items-center">
           <Cpu className="w-4 h-4 text-teal-600 mb-1.5" />
           <span className="text-[11px] font-bold text-slate-800">Meta Muse Spark</span>

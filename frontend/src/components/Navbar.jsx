@@ -79,28 +79,6 @@ export default function Navbar({
                   className="hidden"
                 />
               </label>
-
-              <div className="h-4 w-px bg-slate-200 mx-1"></div>
-
-              {/* Scenarios */}
-              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200/60">
-                {scenarios.slice(0, 3).map((sc) => {
-                  const isActive = selectedScenario?.id === sc.id;
-                  return (
-                    <button
-                      key={sc.id}
-                      onClick={() => onSelectScenario(sc)}
-                      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
-                        isActive
-                          ? 'bg-white text-slate-900 shadow-xs font-semibold'
-                          : 'text-slate-500 hover:text-slate-900'
-                      }`}
-                    >
-                      {sc.title.split(' ')[0]}
-                    </button>
-                  );
-                })}
-              </div>
             </div>
           ) : (
             <div className="hidden md:flex items-center gap-2">

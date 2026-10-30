@@ -199,8 +199,6 @@ export default function App() {
         <UploadCameraEntry
           onOpenCamera={() => setShowCameraModal(true)}
           onFileUpload={handleFileUpload}
-          onSelectPreset={handleSelectScenario}
-          presets={PRESET_SCENARIOS}
         />
       ) : (
         <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-4 animate-fadeIn">
