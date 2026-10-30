@@ -133,19 +133,68 @@ export default function App() {
         const res = await resp.json();
         if (res.data) {
           const ai = res.data;
+
+          // Compute accurate bounding box coordinates (0-100%)
+          const rawBbox = ai.bbox || {};
+          let xMin = Number(rawBbox.x_min);
+          let yMin = Number(rawBbox.y_min);
+          let xMax = Number(rawBbox.x_max);
+          let yMax = Number(rawBbox.y_max);
+
+          // If bbox missing or inverted, calculate natural bounding area from center
+          if (isNaN(xMin) || isNaN(yMin) || isNaN(xMax) || isNaN(yMax) || xMax <= xMin || yMax <= yMin) {
+            const rawCenter = ai.center || {};
+            const cX = Number(rawCenter.x) || 50;
+            const cY = Number(rawCenter.y) || 50;
+            xMin = Math.max(5, cX - 14);
+            xMax = Math.min(95, cX + 14);
+            yMin = Math.max(5, cY - 14);
+            yMax = Math.min(95, cY + 14);
+          }
+
+          // Bound clamp
+          xMin = Math.max(2, Math.min(88, xMin));
+          yMin = Math.max(2, Math.min(88, yMin));
+          xMax = Math.max(xMin + 6, Math.min(98, xMax));
+          yMax = Math.max(yMin + 6, Math.min(98, yMax));
+
+          const centerX = ai.center?.x && !isNaN(Number(ai.center.x))
+            ? Math.max(5, Math.min(95, Number(ai.center.x)))
+            : Math.round((xMin + xMax) / 2);
+          const centerY = ai.center?.y && !isNaN(Number(ai.center.y))
+            ? Math.max(5, Math.min(95, Number(ai.center.y)))
+            : Math.round((yMin + yMax) / 2);
+
+          const accuratePolygon = [
+            { x: Math.round(xMin), y: Math.round(yMin) },
+            { x: Math.round(xMax), y: Math.round(yMin) },
+            { x: Math.round(xMax), y: Math.round(yMax) },
+            { x: Math.round(xMin), y: Math.round(yMax) }
+          ];
+
           const updatedPart = {
             ...initialPart,
             name: ai.component_name || 'Detected Hardware Failure',
             designator: `${ai.designator || 'FAULT-1'} - ${(ai.status || 'CRITICAL').toUpperCase()}`,
+            center: { x: centerX, y: centerY },
+            polygon: accuratePolygon,
             status: ai.status || 'critical',
             statusLabel: `${(ai.status || 'critical').toUpperCase()}: Detected Failure`,
-            healthScore: ai.health_score || 25,
+            healthScore: typeof ai.health_score === 'number' ? ai.health_score : 25,
             confidence: 0.985,
+            repairMetrics: ai.repair_metrics || {
+              difficulty: 'Moderate (Precision Servicing)',
+              estTime: '20-30 mins',
+              estCost: '$2.50 - $8.00',
+              riskRating: 'Electrical / Thermal Hazard'
+            },
+            technicianProTip: ai.technician_pro_tip || 'Verify complete power isolation with a digital multimeter before contacting conductive surfaces.',
+            testVerification: ai.test_verification || 'Measure circuit continuity and impedance against factory schematics.',
             diagnosis: typeof ai.diagnosis === 'string' ? ai.diagnosis : JSON.stringify(ai.diagnosis),
             rootCause: ai.root_cause || 'Thermal and mechanical operational fatigue.',
             safetyAlert: ai.safety_alert || 'Ensure unit is de-energized before handling.',
-            tools: ai.tools || ['Digital Multimeter', 'Precision Screwdrivers', 'Cleaning Solvent'],
-            steps: ai.steps || ['Power down device', 'Inspect defect area', 'Replace worn part'],
+            tools: Array.isArray(ai.tools) ? ai.tools : ['Digital Multimeter', 'Precision Screwdrivers', 'Cleaning Solvent'],
+            steps: Array.isArray(ai.steps) ? ai.steps : ['Power down device', 'Inspect defect area', 'Replace worn part'],
             targetSpec: ai.target_spec || 'Standard OEM operational tolerance.',
             reasoningTrace: res.reasoning
           };
@@ -182,9 +231,37 @@ export default function App() {
     handleProcessImage(dataUrl, 'Live Camera Capture');
   };
 
-  // Safe point selection
+  // Safe point selection & retargeting for custom hardware captures
   const handlePointClick = ({ x, y }) => {
     setLastClickPoint({ x, y });
+  };
+
+  const handleRetargetDefect = ({ x, y }) => {
+    if (!selectedPart || selectedScenario.imageType !== 'custom') return;
+    const halfW = 11;
+    const halfH = 11;
+    const xMin = Math.max(2, x - halfW);
+    const xMax = Math.min(98, x + halfW);
+    const yMin = Math.max(2, y - halfH);
+    const yMax = Math.min(98, y + halfH);
+    const newPolygon = [
+      { x: Math.round(xMin), y: Math.round(yMin) },
+      { x: Math.round(xMax), y: Math.round(yMin) },
+      { x: Math.round(xMax), y: Math.round(yMax) },
+      { x: Math.round(xMin), y: Math.round(yMax) }
+    ];
+    const updatedPart = {
+      ...selectedPart,
+      center: { x: Math.round(x), y: Math.round(y) },
+      polygon: newPolygon
+    };
+    const updatedScenario = {
+      ...selectedScenario,
+      parts: [updatedPart]
+    };
+    setScenarios((prev) => prev.map((s) => s.id === updatedScenario.id ? updatedScenario : s));
+    setSelectedScenario(updatedScenario);
+    setSelectedPart(updatedPart);
   };
 
   // Audio Voice Readout
@@ -302,6 +379,7 @@ export default function App() {
               selectedPart={selectedPart}
               onSelectPart={setSelectedPart}
               onAddPointPrompt={handlePointClick}
+              onRetargetDefect={handleRetargetDefect}
               clickPoint={lastClickPoint}
             />
             <DiagnosticSidebar

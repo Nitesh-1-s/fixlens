@@ -71,11 +71,19 @@ def diagnose(req: DiagnoseRequest) -> Dict[str, Any]:
     client = OpenAI(base_url=base_url, api_key=api_key)
 
     system_prompt = (
-        "You are FixLens, an expert physical hardware and electronics diagnostic intelligence powered by Meta Muse Spark. "
-        "Analyze the provided hardware component and context. "
-        "Return a strictly valid JSON response with keys: 'status' (critical/warning/normal), 'health_score' (0-100), "
-        "'diagnosis' (2-3 sentences), 'root_cause' (1-2 sentences), 'safety_alert' (1 clear warning), "
-        "'tools' (list of 3-5 specific tools), 'steps' (list of 4-6 repair steps), 'target_spec' (1 sentence spec)."
+        "You are FixLens, an industrial-grade multimodal hardware and electronics diagnostic copilot powered by Meta Muse Spark Open. "
+        "Analyze the provided hardware component, failure modes, and context. "
+        "Return a strictly valid JSON response containing these keys: "
+        "'status' ('critical'/'warning'/'normal'), 'health_score' (0-100), "
+        "'repair_metrics' (object with 'difficulty', 'estimated_time', 'estimated_cost', 'risk_rating'), "
+        "'technician_pro_tip' (1 practical gotcha or technician watch-out that prevents costly hardware damage), "
+        "'test_verification' (exact numerical multimeter test, resistance/voltage check, or mechanical measurement), "
+        "'diagnosis' (2-3 clear sentences describing the physical defect and electrical/mechanical implications), "
+        "'root_cause' (1-2 sentences explaining the root failure mechanism), "
+        "'safety_alert' (1 clear de-energization or PPE safety instruction), "
+        "'tools' (list of 3-5 specific tools with technical specifications like temperature, tip type, torque), "
+        "'steps' (list of 4-6 sequential, user-friendly, professional repair steps), "
+        "'target_spec' (1 sentence OEM tolerance and target operating spec)."
     )
 
     user_prompt = f"Component: {req.component_name} ({req.designator}). Context: {req.context}."
@@ -103,12 +111,22 @@ def diagnose(req: DiagnoseRequest) -> Dict[str, Any]:
                 "root_cause": "Operational stress detected under load.",
                 "status": "warning",
                 "health_score": 65,
+                "repair_metrics": {
+                    "difficulty": "Moderate (Precision Servicing)",
+                    "estimated_time": "20-30 mins",
+                    "estimated_cost": "$2.50 - $8.00",
+                    "risk_rating": "Electrical / Thermal Hazard"
+                },
+                "technician_pro_tip": "Verify complete de-energization using a digital multimeter before contacting exposed metal conductors.",
+                "test_verification": "Continuity & Resistance Check: Measure impedance across leads. Open circuit (>10MΩ) or dead short indicates component failure.",
                 "safety_alert": "De-energize circuit before contact.",
-                "tools": ["Digital Multimeter", "Contact Cleaner", "Precision Tweezers"],
+                "tools": ["Digital Multimeter", "Contact Cleaner", "Precision Tweezers", "Anti-Static Mat"],
                 "steps": [
                     "Isolate unit from primary power source.",
-                    "Inspect solder joints under magnification.",
-                    "Verify electrical impedance tolerances."
+                    "Inspect solder joints and contacts under 10x magnification.",
+                    "Clean surface contamination with isopropyl alcohol.",
+                    "Verify electrical impedance tolerances against OEM schematic.",
+                    "Re-energize under bench observation and record operating temperature."
                 ],
                 "target_spec": "Standard OEM operational tolerance."
             }
@@ -197,18 +215,25 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
         data_url = f"data:image/jpeg;base64,{data_url}"
 
     prompt = (
-        "You are FixLens, an expert physical hardware diagnostic vision intelligence. "
-        "Analyze this hardware photograph. Identify the primary failing component or defect. "
-        "Keep your output strictly in valid JSON format with keys: "
-        "'component_name' (specific part name), 'designator' (part identifier), "
-        "'status' ('critical' or 'warning'), 'health_score' (number 0-100), "
-        "'diagnosis' (2-3 clear sentences describing the visible physical fault), "
-        "'root_cause' (1-2 sentences explaining why it failed), "
-        "'safety_alert' (1 clear safety warning), "
-        "'tools' (list of 3-5 specific tools), "
-        "'steps' (list of 4-6 sequential, user-friendly repair steps), "
-        "'target_spec' (1 sentence OEM spec). "
-        "Keep descriptions concise and factual (under 200 words total)."
+        "You are FixLens, an industrial-grade multimodal hardware and physical defect diagnostic intelligence. "
+        "Analyze this hardware photograph with precision. Locate the primary failing component, defect, or wear area. "
+        "Return a strictly valid JSON response containing these exact keys: "
+        "'component_name' (specific component name, e.g. '1500uF 6.3V Bulging Electrolytic Capacitor' or 'Corroded Alternator B+ Stud Terminal'), "
+        "'designator' (schematic/system designator, e.g. 'C12', 'Q4', 'B+ Post', 'N1'), "
+        "'status' ('critical' or 'warning'), "
+        "'health_score' (integer 0-100 indicating remaining component health), "
+        "'bbox' (object with visual percentage coordinates 0-100: {'x_min': float, 'y_min': float, 'x_max': float, 'y_max': float} tightly framing the defect), "
+        "'center' (object with center coordinates: {'x': float, 'y': float}), "
+        "'repair_metrics' (object with 'difficulty': e.g. 'Moderate (Through-Hole Soldering)', 'estimated_time': e.g. '20-30 mins', 'estimated_cost': e.g. '$2.00 - $4.00', 'risk_rating': e.g. 'Electrical / Thermal Hazard'), "
+        "'technician_pro_tip' (1 practical technician watch-out or gotcha that prevents common mistakes and costly damage), "
+        "'test_verification' (exact numerical multimeter test, resistance/capacitance check, or mechanical measurement with expected passing values), "
+        "'diagnosis' (2-3 clear, authoritative sentences describing the visible physical fault and functional impact), "
+        "'root_cause' (1-2 sentences explaining why the failure occurred), "
+        "'safety_alert' (1 clear safety warning regarding high voltage, stored charge, chemical hazard, or burns), "
+        "'tools' (list of 3-5 specific tools with specs, e.g. 'Soldering Station (360°C chisel tip)', '10mm Insulated Wrench', 'Digital Multimeter'), "
+        "'steps' (list of 4-6 sequential, user-friendly, highly actionable repair steps), "
+        "'target_spec' (1 sentence OEM tolerance and target spec). "
+        "Keep descriptions concise and factual (under 250 words total)."
     )
 
     try:
@@ -245,21 +270,33 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
             "status": "fallback",
             "error": str(e),
             "data": {
-                "component_name": "Visual Defect Region",
+                "component_name": "Physical Failure / Defect Zone",
                 "designator": "ROI-1",
-                "status": "warning",
-                "health_score": 48,
-                "diagnosis": "Visual inspection indicates mechanical fatigue and localized thermal wear.",
-                "root_cause": "Duty cycle thermal stress exceeding operating tolerances.",
-                "safety_alert": "Isolate power supply before hands-on servicing.",
-                "tools": ["Digital Multimeter", "Precision Screwdriver Set", "Contact Cleaner"],
+                "status": "critical",
+                "health_score": 32,
+                "bbox": {"x_min": 35.0, "y_min": 30.0, "x_max": 65.0, "y_max": 68.0},
+                "center": {"x": 50.0, "y": 49.0},
+                "repair_metrics": {
+                    "difficulty": "Moderate (Precision Servicing)",
+                    "estimated_time": "20-30 mins",
+                    "estimated_cost": "$2.50 - $12.00",
+                    "risk_rating": "Electrical / Thermal Hazard"
+                },
+                "technician_pro_tip": "Always allow components to cool and verify zero residual stored charge using a multimeter before touching metal leads or heatsinks.",
+                "test_verification": "Continuity and resistance check: Measure impedance between component leads. Open-loop or dead short (<0.5Ω) confirms internal dielectric failure.",
+                "diagnosis": "Visual inspection reveals visible thermal discolouration, surface degradation, and material fatigue across the primary load-bearing area.",
+                "root_cause": "Operating duty cycle thermal cycling combined with prolonged current or mechanical stress.",
+                "safety_alert": "DANGER: Ensure hardware is completely de-energized and unplugged from power before handling.",
+                "tools": ["Digital Multimeter", "Precision Screwdriver / Hex Set", "99% Isopropyl Alcohol", "Anti-Static ESD Wrist Strap"],
                 "steps": [
-                    "Isolate unit from primary power source.",
-                    "Inspect mechanical connections and clearances under magnification.",
-                    "Clean surface contamination and re-torque screws to specification.",
-                    "Power on under observation and verify normal operational voltages."
+                    "Completely isolate the equipment from all external AC/DC electrical power feeds.",
+                    "Discharge residual capacitance across circuit terminals using a 1kΩ 5W power resistor.",
+                    "Inspect the highlighted failure area under 10x magnification or bright LED illumination.",
+                    "Remove retaining screws/fasteners and detach degraded component without stressing adjacent traces.",
+                    "Clean mating surfaces using 99% IPA and mount verified OEM replacement.",
+                    "Verify impedance tolerances with digital multimeter before restoring power."
                 ],
-                "target_spec": "Standard OEM replacement component."
+                "target_spec": "Standard OEM factory operational tolerance and rating."
             }
         }
 

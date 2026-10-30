@@ -13,6 +13,7 @@ export default function HardwareCanvas({
   selectedPart,
   onSelectPart,
   onAddPointPrompt,
+  onRetargetDefect,
   clickPoint,
 }) {
   const containerRef = useRef(null);
@@ -64,8 +65,11 @@ export default function HardwareCanvas({
       }
     });
 
-    if (closestPart && minDist < 28) {
+    if (closestPart && minDist < 32) {
       onSelectPart(closestPart);
+    } else if (onRetargetDefect && scenario.imageType === 'custom') {
+      // Re-target defect bounding box onto user's clicked location
+      onRetargetDefect({ x: xPct, y: yPct });
     }
   };
 
