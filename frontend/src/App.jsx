@@ -6,6 +6,7 @@ import WorkOrderModal from './components/WorkOrderModal';
 import LoadingScreen from './components/LoadingScreen';
 import GuideModal from './components/GuideModal';
 import CameraModal from './components/CameraModal';
+import UploadCameraEntry from './components/UploadCameraEntry';
 import { PRESET_SCENARIOS } from './data/presets';
 import { Activity, Volume2, VolumeX, Cloud, CheckCircle, HelpCircle, ArrowRight, Sparkles, Camera, Upload } from 'lucide-react';
 
@@ -13,6 +14,7 @@ const LIVE_ANALYZE_IMAGE_API = "https://nitesh-naasai--fixlens-backend-analyze-i
 
 export default function App() {
   const [isLoading, setIsLoading] = useState(true);
+  const [isEntryView, setIsEntryView] = useState(true);
   const [scenarios, setScenarios] = useState(PRESET_SCENARIOS);
   const [selectedScenario, setSelectedScenario] = useState(PRESET_SCENARIOS[0]);
   const [selectedPart, setSelectedPart] = useState(PRESET_SCENARIOS[0].parts[0]);
@@ -29,6 +31,13 @@ export default function App() {
   const handleSelectScenario = (sc) => {
     setSelectedScenario(sc);
     setSelectedPart(sc.parts[0] || null);
+    setIsEntryView(false);
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+  };
+
+  const handleNewScan = () => {
+    setIsEntryView(true);
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
@@ -78,6 +87,7 @@ export default function App() {
     setScenarios((prev) => [newScenario, ...prev]);
     setSelectedScenario(newScenario);
     setSelectedPart(initialPart);
+    setIsEntryView(false);
 
     // Call live Modal vision endpoint
     try {
@@ -181,90 +191,101 @@ export default function App() {
         setApiKey={setApiKey}
         onOpenGuide={() => setShowGuideModal(true)}
         onOpenCamera={() => setShowCameraModal(true)}
+        isEntryView={isEntryView}
+        onNewScan={handleNewScan}
       />
 
-      <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-4">
-        {/* Quick Action Hint Banner */}
-        <div className="bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 shadow-xs">
-          <div className="flex items-center gap-2.5">
-            <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
-            <span>
-              <strong>Streamlined Flow:</strong> Snap or upload any hardware photo to auto-detect failures, follow the step-by-step repair guide, and chat live with the <strong>AI Copilot</strong>!
-            </span>
-          </div>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => setShowCameraModal(true)}
-              className="text-[11px] font-bold text-teal-700 hover:text-teal-900 bg-white border border-teal-200 px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 shadow-xs"
-            >
-              <Camera className="w-3.5 h-3.5 text-teal-600" /> Camera
-            </button>
-            <button
-              onClick={() => setShowGuideModal(true)}
-              className="text-[11px] font-bold text-teal-700 hover:text-teal-900 hover:underline flex items-center gap-1 shrink-0 ml-1"
-            >
-              Guide <ArrowRight className="w-3 h-3" />
-            </button>
-          </div>
-        </div>
-
-        {/* Info & Live Cloud Status Bar */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-          <div>
-            <div className="flex items-center gap-2">
-              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-teal-50 text-teal-700 border border-teal-100">
-                {selectedScenario.category}
+      {isEntryView ? (
+        <UploadCameraEntry
+          onOpenCamera={() => setShowCameraModal(true)}
+          onFileUpload={handleFileUpload}
+          onSelectPreset={handleSelectScenario}
+          presets={PRESET_SCENARIOS}
+        />
+      ) : (
+        <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-4 animate-fadeIn">
+          {/* Quick Action Hint Banner */}
+          <div className="bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 shadow-xs">
+            <div className="flex items-center gap-2.5">
+              <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
+              <span>
+                <strong>Hardware Inspection Active:</strong> Select any highlighted part to see teardown steps, or click <strong>Ask AI Copilot</strong> to chat!
               </span>
-              <h2 className="text-sm font-bold text-slate-900">{selectedScenario.title}</h2>
             </div>
-            <p className="text-xs text-slate-400 mt-0.5">{selectedScenario.description}</p>
-          </div>
-
-          <div className="flex items-center gap-2">
-            {/* Live Modal Cloud Indicator Badge */}
-            <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600">
-              <Cloud className="w-3.5 h-3.5 text-teal-600" />
-              <span>Modal Cloud:</span>
-              <strong className="text-teal-700">LIVE (US-East)</strong>
-            </div>
-
-            <button
-              onClick={handleToggleVoice}
-              className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all border ${
-                isSpeaking
-                  ? 'bg-red-50 text-red-600 border-red-200'
-                  : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
-              }`}
-            >
-              {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-              {isSpeaking ? 'Stop' : 'Voice'}
-            </button>
-
-            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600">
-              <Activity className="w-3 h-3 text-teal-600" />
-              <span>Segments:</span>
-              <strong className="text-slate-900">{selectedScenario.parts.length}</strong>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setShowCameraModal(true)}
+                className="text-[11px] font-bold text-teal-700 hover:text-teal-900 bg-white border border-teal-200 px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 shadow-xs"
+              >
+                <Camera className="w-3.5 h-3.5 text-teal-600" /> Camera
+              </button>
+              <button
+                onClick={handleNewScan}
+                className="text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 shadow-xs"
+              >
+                New Scan
+              </button>
             </div>
           </div>
-        </div>
 
-        {/* Main Two-Column Layout */}
-        <div className="flex-1 flex flex-col lg:flex-row gap-5 min-h-[600px]">
-          <HardwareCanvas
-            scenario={selectedScenario}
-            selectedPart={selectedPart}
-            onSelectPart={setSelectedPart}
-            onAddPointPrompt={handlePointClick}
-            clickPoint={lastClickPoint}
-          />
-          <DiagnosticSidebar
-            part={selectedPart}
-            scenario={selectedScenario}
-            onExportReport={(part) => setWorkOrderPart(part)}
-            isLiveInferencing={isLiveInferencing}
-          />
-        </div>
-      </main>
+          {/* Info & Live Cloud Status Bar */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-teal-50 text-teal-700 border border-teal-100">
+                  {selectedScenario.category}
+                </span>
+                <h2 className="text-sm font-bold text-slate-900">{selectedScenario.title}</h2>
+              </div>
+              <p className="text-xs text-slate-400 mt-0.5">{selectedScenario.description}</p>
+            </div>
+
+            <div className="flex items-center gap-2">
+              {/* Live Modal Cloud Indicator Badge */}
+              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600">
+                <Cloud className="w-3.5 h-3.5 text-teal-600" />
+                <span>Modal Cloud:</span>
+                <strong className="text-teal-700">LIVE (US-East)</strong>
+              </div>
+
+              <button
+                onClick={handleToggleVoice}
+                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all border ${
+                  isSpeaking
+                    ? 'bg-red-50 text-red-600 border-red-200'
+                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
+                }`}
+              >
+                {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
+                {isSpeaking ? 'Stop' : 'Voice'}
+              </button>
+
+              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600">
+                <Activity className="w-3 h-3 text-teal-600" />
+                <span>Segments:</span>
+                <strong className="text-slate-900">{selectedScenario.parts.length}</strong>
+              </div>
+            </div>
+          </div>
+
+          {/* Main Two-Column Layout */}
+          <div className="flex-1 flex flex-col lg:flex-row gap-5 min-h-[600px]">
+            <HardwareCanvas
+              scenario={selectedScenario}
+              selectedPart={selectedPart}
+              onSelectPart={setSelectedPart}
+              onAddPointPrompt={handlePointClick}
+              clickPoint={lastClickPoint}
+            />
+            <DiagnosticSidebar
+              part={selectedPart}
+              scenario={selectedScenario}
+              onExportReport={(part) => setWorkOrderPart(part)}
+              isLiveInferencing={isLiveInferencing}
+            />
+          </div>
+        </main>
+      )}
 
       {/* Footer */}
       <footer className="w-full border-t border-slate-100 py-3 px-6 text-center">

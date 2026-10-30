@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Upload, Key, Check, X, ChevronDown, HelpCircle, Camera } from 'lucide-react';
+import { Upload, Key, Check, X, ChevronDown, HelpCircle, Camera, ArrowLeft } from 'lucide-react';
 import Logo from './Logo';
 
 export default function Navbar({
@@ -10,7 +10,9 @@ export default function Navbar({
   apiKey,
   setApiKey,
   onOpenGuide,
-  onOpenCamera
+  onOpenCamera,
+  isEntryView,
+  onNewScan
 }) {
   const [showKeyModal, setShowKeyModal] = useState(false);
   const [tempKey, setTempKey] = useState(apiKey || '');
@@ -27,82 +29,86 @@ export default function Navbar({
         <div className="max-w-[1440px] mx-auto px-6 py-3 flex items-center justify-between">
           {/* Logo & Name */}
           <div className="flex items-center gap-3">
-            <Logo size={28} />
-            <div>
-              <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none">
-                FixLens
-              </h1>
-              <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
-                Hardware Diagnostic Platform
-              </p>
-            </div>
-          </div>
-
-          {/* Scenario Selector */}
-          <div className="hidden md:flex items-center gap-1.5">
-            {scenarios.map((sc) => {
-              const isActive = selectedScenario.id === sc.id;
-              return (
-                <button
-                  key={sc.id}
-                  onClick={() => onSelectScenario(sc)}
-                  className={`px-4 py-2 rounded-lg text-xs font-medium transition-all ${
-                    isActive
-                      ? 'bg-teal-600 text-white'
-                      : 'text-slate-500 hover:text-slate-900 hover:bg-slate-50'
-                  }`}
-                >
-                  {sc.title.split(' ').slice(0, 2).join(' ')}
-                </button>
-              );
-            })}
-
-            {/* Live Camera Button */}
             <button
-              onClick={onOpenCamera}
-              className="px-3 py-2 rounded-lg text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all flex items-center gap-1.5"
-              title="Capture with Webcam / Phone Camera"
+              onClick={onNewScan}
+              className="flex items-center gap-3 text-left hover:opacity-85 transition-opacity"
             >
-              <Camera className="w-3.5 h-3.5 text-teal-600" />
-              <span>Camera</span>
-            </button>
-
-            {/* Upload */}
-            <label className="px-3.5 py-2 rounded-lg text-xs font-medium text-slate-700 hover:text-teal-700 bg-slate-50 hover:bg-slate-100 transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200 hover:border-teal-300">
-              <Upload className="w-3.5 h-3.5 text-teal-600" />
-              <span>Upload Photo</span>
-              <input
-                type="file"
-                accept="image/*"
-                onChange={onFileUpload}
-                className="hidden"
-              />
-            </label>
-          </div>
-
-          {/* Mobile Dropdown */}
-          <div className="md:hidden relative">
-            <button
-              onClick={() => setShowDropdown(!showDropdown)}
-              className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg text-xs font-medium text-slate-700 flex items-center gap-2"
-            >
-              {selectedScenario.title.split(' ').slice(0, 2).join(' ')}
-              <ChevronDown className="w-3.5 h-3.5" />
-            </button>
-            {showDropdown && (
-              <div className="absolute right-0 mt-1 w-56 bg-white border border-slate-200 rounded-xl shadow-lg py-1 z-50">
-                {scenarios.map((sc) => (
-                  <button
-                    key={sc.id}
-                    onClick={() => { onSelectScenario(sc); setShowDropdown(false); }}
-                    className="w-full px-4 py-2.5 text-left text-xs text-slate-700 hover:bg-slate-50"
-                  >
-                    {sc.title}
-                  </button>
-                ))}
+              <Logo size={28} />
+              <div>
+                <h1 className="text-lg font-bold text-slate-900 tracking-tight leading-none">
+                  FixLens
+                </h1>
+                <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">
+                  Hardware Diagnostic Platform
+                </p>
               </div>
-            )}
+            </button>
           </div>
+
+          {/* Navigation Controls when in Inspection Mode */}
+          {!isEntryView ? (
+            <div className="hidden md:flex items-center gap-2">
+              <button
+                onClick={onNewScan}
+                className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-slate-50 hover:bg-slate-100 border border-slate-200 transition-all flex items-center gap-1.5"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span>New Scan</span>
+              </button>
+
+              <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
+              {/* Live Camera Button */}
+              <button
+                onClick={onOpenCamera}
+                className="px-3 py-2 rounded-xl text-xs font-semibold text-teal-700 bg-teal-50 hover:bg-teal-100 border border-teal-200 transition-all flex items-center gap-1.5"
+                title="Capture with Webcam / Phone Camera"
+              >
+                <Camera className="w-3.5 h-3.5 text-teal-600" />
+                <span>Camera</span>
+              </button>
+
+              {/* Upload */}
+              <label className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-700 hover:text-teal-700 bg-slate-50 hover:bg-slate-100 transition-all flex items-center gap-1.5 cursor-pointer border border-slate-200 hover:border-teal-300">
+                <Upload className="w-3.5 h-3.5 text-teal-600" />
+                <span>Upload</span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  onChange={onFileUpload}
+                  className="hidden"
+                />
+              </label>
+
+              <div className="h-4 w-px bg-slate-200 mx-1"></div>
+
+              {/* Scenarios */}
+              <div className="flex items-center gap-1 bg-slate-50 p-1 rounded-xl border border-slate-200/60">
+                {scenarios.slice(0, 3).map((sc) => {
+                  const isActive = selectedScenario?.id === sc.id;
+                  return (
+                    <button
+                      key={sc.id}
+                      onClick={() => onSelectScenario(sc)}
+                      className={`px-3 py-1.5 rounded-lg text-[11px] font-medium transition-all ${
+                        isActive
+                          ? 'bg-white text-slate-900 shadow-xs font-semibold'
+                          : 'text-slate-500 hover:text-slate-900'
+                      }`}
+                    >
+                      {sc.title.split(' ')[0]}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : (
+            <div className="hidden md:flex items-center gap-2">
+              <span className="text-xs text-slate-400 font-mono">
+                Physical Hardware Multimodal Copilot
+              </span>
+            </div>
+          )}
 
           {/* Guide & API Key */}
           <div className="flex items-center gap-2.5">
