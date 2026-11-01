@@ -3,10 +3,25 @@
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>frontend</title>
+    <link rel="apple-touch-icon" href="/pwa-icon.svg" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+
+    <!-- Mobile Viewport & PWA App Configurations -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="theme-color" content="#0D9488" />
+    <meta name="background-color" content="#FFFFFF" />
+
+    <!-- Apple iOS Web App Configurations -->
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="FixLens" />
+
+    <!-- SEO & Metadata -->
+    <title>FixLens — Multimodal Hardware Diagnostic Copilot</title>
+    <meta name="description" content="Physical hardware failure diagnostic copilot powered by Meta Muse Spark Open and SAM 3.1" />
   </head>
-  <body>
+  <body class="bg-white text-slate-900 antialiased selection:bg-teal-100 selection:text-teal-900 overscroll-none">
     <div id="root"></div>
     <script type="module" src="/src/main.jsx"></script>
   </body>

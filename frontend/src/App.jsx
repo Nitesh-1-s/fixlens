@@ -2,13 +2,19 @@ import React, { useState, useCallback } from 'react';
 import Navbar from './components/Navbar';
 import HardwareCanvas from './components/HardwareCanvas';
 import DiagnosticSidebar from './components/DiagnosticSidebar';
+import ChatCopilot from './components/ChatCopilot';
 import WorkOrderModal from './components/WorkOrderModal';
 import LoadingScreen from './components/LoadingScreen';
 import GuideModal from './components/GuideModal';
 import CameraModal from './components/CameraModal';
 import UploadCameraEntry from './components/UploadCameraEntry';
+import PwaInstallBanner from './components/PwaInstallBanner';
+import MobileBottomNav from './components/MobileBottomNav';
 import { PRESET_SCENARIOS } from './data/presets';
-import { Activity, Volume2, VolumeX, Cloud, CheckCircle, HelpCircle, ArrowRight, Sparkles, Camera, Upload } from 'lucide-react';
+import {
+  Activity, Volume2, VolumeX, Cloud, CheckCircle, HelpCircle,
+  ArrowRight, Sparkles, Camera, Upload, Smartphone, Crosshair, Wrench, MessageSquare, ArrowLeft
+} from 'lucide-react';
 
 const LIVE_ANALYZE_IMAGE_API = "https://nitesh-naasai--fixlens-backend-analyze-image.us-east.modal.run";
 
@@ -25,6 +31,8 @@ export default function App() {
   const [isLiveInferencing, setIsLiveInferencing] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
+  const [isPhonePreview, setIsPhonePreview] = useState(false);
+  const [mobileTab, setMobileTab] = useState('scan'); // 'scan' | 'guide' | 'chat'
 
   const handleFinishLoading = useCallback(() => setIsLoading(false), []);
 
@@ -32,12 +40,14 @@ export default function App() {
     setSelectedScenario(sc);
     setSelectedPart(sc.parts[0] || null);
     setIsEntryView(false);
+    setMobileTab('scan');
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
 
   const handleNewScan = () => {
     setIsEntryView(true);
+    setMobileTab('scan');
     if (window.speechSynthesis) window.speechSynthesis.cancel();
     setIsSpeaking(false);
   };
@@ -79,6 +89,10 @@ export default function App() {
       id: `fault_${Date.now()}`,
       name: 'Scanning Hardware for Failures...',
       designator: 'FAULT-DETECTION - Active Scan',
+      deviceName: 'Hardware Assembly Under Inspection',
+      laymanSummary: 'Meta Muse Spark Open is inspecting this image to identify the product, diagnose defects, and provide beginner-friendly teardown steps.',
+      laymanFixGuide: 'De-energize device completely and inspect highlighted area.',
+      beginnerFriendly: 'Inspecting defect severity...',
       center: { x: 50, y: 50 },
       polygon: [
         { x: 34, y: 34 },
@@ -117,6 +131,7 @@ export default function App() {
     setSelectedScenario(newScenario);
     setSelectedPart(initialPart);
     setIsEntryView(false);
+    setMobileTab('scan');
 
     // Call live Modal vision endpoint
     try {
@@ -293,94 +308,99 @@ export default function App() {
 
   if (isLoading) return <LoadingScreen onFinish={handleFinishLoading} />;
 
-  return (
-    <div className="min-h-screen bg-white text-slate-900 flex flex-col font-sans">
-      <Navbar
-        scenarios={scenarios}
-        selectedScenario={selectedScenario}
-        onSelectScenario={handleSelectScenario}
-        onFileUpload={handleFileUpload}
-        apiKey={apiKey}
-        setApiKey={setApiKey}
-        onOpenGuide={() => setShowGuideModal(true)}
-        onOpenCamera={() => setShowCameraModal(true)}
-        isEntryView={isEntryView}
-        onNewScan={handleNewScan}
-      />
-
-      {isEntryView ? (
+  // Main workspace content
+  const renderWorkspaceContent = () => {
+    if (isEntryView) {
+      return (
         <UploadCameraEntry
           onOpenCamera={() => setShowCameraModal(true)}
           onFileUpload={handleFileUpload}
+          onSelectPreset={handleSelectScenario}
         />
-      ) : (
-        <main className="flex-1 max-w-[1440px] w-full mx-auto p-5 md:p-6 flex flex-col gap-4 animate-fadeIn">
-          {/* Quick Action Hint Banner */}
-          <div className="bg-teal-50/50 border border-teal-100 rounded-2xl px-4 py-2.5 flex items-center justify-between text-xs text-slate-600 shadow-xs">
-            <div className="flex items-center gap-2.5">
-              <span className="w-2 h-2 rounded-full bg-teal-500 animate-ping"></span>
-              <span>
-                <strong>Hardware Inspection Active:</strong> Select any highlighted part to see teardown steps, or click <strong>Ask AI Copilot</strong> to chat!
-              </span>
-            </div>
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setShowCameraModal(true)}
-                className="text-[11px] font-bold text-teal-700 hover:text-teal-900 bg-white border border-teal-200 px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 shadow-xs"
-              >
-                <Camera className="w-3.5 h-3.5 text-teal-600" /> Camera
-              </button>
-              <button
-                onClick={handleNewScan}
-                className="text-[11px] font-bold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 px-2.5 py-1 rounded-lg flex items-center gap-1 shrink-0 shadow-xs"
-              >
-                New Scan
-              </button>
-            </div>
-          </div>
+      );
+    }
 
-          {/* Info & Live Cloud Status Bar */}
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 px-1">
-            <div>
+    return (
+      <div className="flex-1 w-full max-w-[1440px] mx-auto p-3 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 animate-fadeIn pb-20 lg:pb-6">
+        {/* Top Info & Segment Selector Bar */}
+        <div className="flex flex-col gap-2.5">
+          {/* Status & Quick Actions Bar */}
+          <div className="flex items-center justify-between gap-2 px-1">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-teal-50 text-teal-700 border border-teal-100">
+                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-teal-50 text-teal-700 border border-teal-100 shrink-0">
                   {selectedScenario.category}
                 </span>
-                <h2 className="text-sm font-bold text-slate-900">{selectedScenario.title}</h2>
+                <h2 className="text-sm font-bold text-slate-900 truncate">{selectedScenario.title}</h2>
               </div>
-              <p className="text-xs text-slate-400 mt-0.5">{selectedScenario.description}</p>
+              <p className="text-[11px] text-slate-400 truncate mt-0.5 hidden xs:block">{selectedScenario.description}</p>
             </div>
 
-            <div className="flex items-center gap-2">
-              {/* Live Modal Cloud Indicator Badge */}
-              <div className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600">
-                <Cloud className="w-3.5 h-3.5 text-teal-600" />
-                <span>Modal Cloud:</span>
-                <strong className="text-teal-700">LIVE (US-East)</strong>
-              </div>
-
+            <div className="flex items-center gap-1.5 shrink-0">
               <button
                 onClick={handleToggleVoice}
-                className={`px-3 py-1.5 rounded-lg text-xs font-medium flex items-center gap-1.5 transition-all border ${
+                className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all border ${
                   isSpeaking
                     ? 'bg-red-50 text-red-600 border-red-200'
                     : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
                 }`}
+                title="Voice Readout"
               >
                 {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                {isSpeaking ? 'Stop' : 'Voice'}
+                <span className="hidden sm:inline">{isSpeaking ? 'Stop' : 'Voice'}</span>
               </button>
 
-              <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-[10px] font-mono text-slate-600">
-                <Activity className="w-3 h-3 text-teal-600" />
-                <span>Segments:</span>
-                <strong className="text-slate-900">{selectedScenario.parts.length}</strong>
-              </div>
+              <button
+                onClick={handleNewScan}
+                className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-lg shadow-2xs flex items-center gap-1"
+              >
+                <ArrowLeft className="w-3.5 h-3.5" />
+                <span className="hidden sm:inline">New Scan</span>
+              </button>
             </div>
           </div>
 
-          {/* Main Two-Column Layout */}
-          <div className="flex-1 flex flex-col lg:flex-row gap-5 min-h-[600px]">
+          {/* Component Pill Carousel (Allows 1-tap switching between parts on mobile) */}
+          {selectedScenario.parts && selectedScenario.parts.length > 0 && (
+            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider shrink-0 font-semibold mr-1">
+                Components:
+              </span>
+              {selectedScenario.parts.map((p) => {
+                const isSelected = selectedPart?.id === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    onClick={() => setSelectedPart(p)}
+                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 border shadow-2xs ${
+                      isSelected
+                        ? 'bg-teal-700 text-white border-teal-700'
+                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
+                    }`}
+                  >
+                    <span
+                      className={`w-2 h-2 rounded-full ${
+                        p.status === 'critical'
+                          ? 'bg-red-400'
+                          : p.status === 'warning'
+                          ? 'bg-amber-400'
+                          : 'bg-emerald-400'
+                      }`}
+                    />
+                    <span>{p.designator.split(' - ')[0]}</span>
+                    <span className="opacity-75 font-normal truncate max-w-[120px] hidden sm:inline">
+                      {p.name}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* Desktop View (Side-by-Side Dual Column when not in Phone Simulation mode) */}
+        {!isPhonePreview && (
+          <div className="hidden lg:flex flex-1 flex-row gap-5 min-h-[620px]">
             <HardwareCanvas
               scenario={selectedScenario}
               selectedPart={selectedPart}
@@ -396,19 +416,127 @@ export default function App() {
               isLiveInferencing={isLiveInferencing}
             />
           </div>
-        </main>
+        )}
+
+        {/* Mobile View (Tabbed Navigation View on Screens < 1024px OR when Phone Preview is ON) */}
+        {(isPhonePreview || true) && (
+          <div className={`${isPhonePreview ? 'block' : 'lg:hidden block'} flex-1 w-full`}>
+            {/* Viewport content switcher */}
+            {mobileTab === 'scan' && (
+              <div className="animate-fadeIn">
+                <HardwareCanvas
+                  scenario={selectedScenario}
+                  selectedPart={selectedPart}
+                  onSelectPart={setSelectedPart}
+                  onAddPointPrompt={handlePointClick}
+                  onRetargetDefect={handleRetargetDefect}
+                  onOpenGuideTab={() => setMobileTab('guide')}
+                  clickPoint={lastClickPoint}
+                />
+              </div>
+            )}
+
+            {mobileTab === 'guide' && (
+              <div className="animate-fadeIn">
+                <DiagnosticSidebar
+                  part={selectedPart}
+                  scenario={selectedScenario}
+                  onExportReport={(part) => setWorkOrderPart(part)}
+                  isLiveInferencing={isLiveInferencing}
+                />
+              </div>
+            )}
+
+            {mobileTab === 'chat' && (
+              <div className="animate-fadeIn h-[560px] bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
+                <ChatCopilot part={selectedPart} scenario={selectedScenario} />
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Mobile Bottom Navigation Bar */}
+        <MobileBottomNav
+          activeTab={mobileTab}
+          onTabChange={setMobileTab}
+          onOpenCamera={() => setShowCameraModal(true)}
+          progressPct={selectedPart?.steps ? 25 : 0}
+          isLiveInferencing={isLiveInferencing}
+        />
+      </div>
+    );
+  };
+
+  return (
+    <div className="min-h-screen bg-slate-100/50 text-slate-900 flex flex-col font-sans select-none antialiased">
+      {/* Top Mobile PWA Install Banner */}
+      <PwaInstallBanner />
+
+      {/* Main Top Navigation Header */}
+      <Navbar
+        scenarios={scenarios}
+        selectedScenario={selectedScenario}
+        onSelectScenario={handleSelectScenario}
+        onFileUpload={handleFileUpload}
+        apiKey={apiKey}
+        setApiKey={setApiKey}
+        onOpenGuide={() => setShowGuideModal(true)}
+        onOpenCamera={() => setShowCameraModal(true)}
+        isEntryView={isEntryView}
+        onNewScan={handleNewScan}
+        isPhonePreview={isPhonePreview}
+        onTogglePhonePreview={() => setIsPhonePreview(!isPhonePreview)}
+      />
+
+      {/* Content Area */}
+      {isPhonePreview ? (
+        /* Phone Simulator Frame on Desktop (Shows off the native PWA view with iPhone bezel!) */
+        <div className="flex-1 flex flex-col items-center justify-center p-4 sm:p-8 bg-slate-900/10">
+          <div className="text-center mb-3">
+            <span className="px-3 py-1 rounded-full bg-slate-800 text-teal-300 text-[11px] font-mono font-semibold shadow-xs">
+              📱 PWA Mobile Phone View Simulator (Touch & Bottom Bar Active)
+            </span>
+          </div>
+
+          {/* iPhone 15 Pro Physical Mockup Bezel */}
+          <div className="relative w-full max-w-[420px] h-[820px] bg-white rounded-[50px] shadow-2xl border-[10px] border-slate-900 overflow-hidden flex flex-col">
+            {/* Dynamic Island / Camera Notch */}
+            <div className="absolute top-3 inset-x-0 flex justify-center z-50 pointer-events-none">
+              <div className="w-24 h-4 bg-slate-900 rounded-full flex items-center justify-end px-2">
+                <div className="w-2 h-2 rounded-full bg-slate-800"></div>
+              </div>
+            </div>
+
+            {/* Phone Screen Internal Container */}
+            <div className="flex-1 w-full h-full overflow-y-auto custom-scrollbar flex flex-col pt-7 bg-white">
+              {renderWorkspaceContent()}
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Standard Responsive View (Edge-to-edge on mobile, wide on desktop) */
+        <div className="flex-1 flex flex-col bg-white">
+          {renderWorkspaceContent()}
+        </div>
       )}
 
-      {/* Footer */}
-      <footer className="w-full border-t border-slate-100 py-3 px-6 text-center">
-        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400">
-          <span>Built for <strong className="text-slate-700">Meta Global AI Developer Hackathon 2026</strong> · Indie Developer Track</span>
-          <span className="font-mono text-teal-700 font-medium">SAM 3.1 · Muse Spark Open · Modal (Active) · Baseten 2M TPM</span>
-        </div>
-      </footer>
+      {/* Desktop Global Footer */}
+      {!isPhonePreview && (
+        <footer className="w-full border-t border-slate-100 py-3 px-6 text-center bg-white hidden sm:block">
+          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 font-mono">
+            <span>FixLens PWA · Built for <strong className="text-slate-700">Meta Global AI Developer Hackathon 2026</strong></span>
+            <span className="text-teal-700 font-medium">Meta Muse Spark Open · SAM 3.1 · Modal Serverless Cloud</span>
+          </div>
+        </footer>
+      )}
 
+      {/* Modals */}
       {workOrderPart && (
-        <WorkOrderModal part={workOrderPart} scenario={selectedScenario} onClose={() => setWorkOrderPart(null)} />
+        <WorkOrderModal
+          part={workOrderPart}
+          scenario={selectedScenario}
+          onClose={() => setWorkOrderPart(null)}
+        />
       )}
 
       {showGuideModal && (
@@ -416,7 +544,10 @@ export default function App() {
       )}
 
       {showCameraModal && (
-        <CameraModal onCapture={handleCameraCapture} onClose={() => setShowCameraModal(false)} />
+        <CameraModal
+          onCapture={handleCameraCapture}
+          onClose={() => setShowCameraModal(false)}
+        />
       )}
     </div>
   );

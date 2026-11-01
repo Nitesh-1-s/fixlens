@@ -1,0 +1,40 @@
+{
+  "name": "FixLens - Multimodal Hardware Diagnostic Copilot",
+  "short_name": "FixLens",
+  "description": "Zero-shot visual hardware & appliance defect diagnosis powered by Meta Muse Spark Open and SAM 3.1",
+  "start_url": "/",
+  "id": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#FFFFFF",
+  "theme_color": "#0D9488",
+  "categories": ["utilities", "productivity", "education"],
+  "icons": [
+    {
+      "src": "/pwa-icon.svg",
+      "sizes": "192x192 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.svg",
+      "sizes": "48x48",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Open Camera Scanner",
+      "short_name": "Camera",
+      "url": "/?action=camera",
+      "icons": [{ "src": "/pwa-icon.svg", "sizes": "96x96" }]
+    },
+    {
+      "name": "Upload Hardware Photo",
+      "short_name": "Upload",
+      "url": "/?action=upload",
+      "icons": [{ "src": "/pwa-icon.svg", "sizes": "96x96" }]
+    }
+  ]
+}

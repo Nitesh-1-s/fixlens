@@ -6,6 +6,7 @@ import {
   Grid,
   Crosshair,
   Maximize2,
+  ArrowRight,
 } from 'lucide-react';
 
 export default function HardwareCanvas({
@@ -14,6 +15,7 @@ export default function HardwareCanvas({
   onSelectPart,
   onAddPointPrompt,
   onRetargetDefect,
+  onOpenGuideTab,
   clickPoint,
 }) {
   const containerRef = useRef(null);
@@ -86,22 +88,22 @@ export default function HardwareCanvas({
   };
 
   return (
-    <div className="relative flex flex-col flex-1 h-full min-h-[580px] bg-white border border-slate-200 rounded-2xl overflow-hidden select-none shadow-sm">
-      {/* Top Vision Inspection HUD (Clean White) */}
-      <div className="px-4 py-2.5 bg-white border-b border-slate-100 text-slate-700 flex items-center justify-between z-20">
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-teal-50 border border-teal-100 text-[11px] font-mono text-teal-700 font-semibold">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse"></span>
-            SAM-3.1 REAL OPTICAL FEED
+    <div className="relative flex flex-col flex-1 h-full min-h-[360px] sm:min-h-[520px] bg-white border border-slate-200 rounded-2xl overflow-hidden select-none shadow-sm">
+      {/* Top Vision Inspection HUD */}
+      <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-white border-b border-slate-100 text-slate-700 flex items-center justify-between z-20">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <div className="flex items-center gap-1.5 px-2 py-0.5 sm:px-2.5 sm:py-1 rounded-lg bg-teal-50 border border-teal-100 text-[10px] sm:text-[11px] font-mono text-teal-700 font-semibold truncate">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse shrink-0"></span>
+            SAM-3.1 OPTICAL FEED
           </div>
           <span className="hidden sm:inline text-slate-300 text-xs">|</span>
           <span className="hidden sm:inline text-[11px] font-mono text-slate-400">
-            High-Resolution Physical Capture
+            Physical Telemetry
           </span>
         </div>
 
         {/* HUD Controls */}
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-1.5 sm:gap-2">
           {mousePos.visible && (
             <div className="hidden md:flex items-center gap-2 px-2.5 py-1 rounded-lg bg-slate-50 border border-slate-200 font-mono text-[10px] text-slate-500">
               <span>X: <strong className="text-slate-800">{mousePos.x}%</strong></span>
@@ -152,7 +154,7 @@ export default function HardwareCanvas({
 
       {/* Main Inspection Canvas (Clean White Background with Real Photo) */}
       <div
-        className="relative flex-1 w-full h-full flex items-center justify-center cursor-crosshair overflow-hidden p-6 bg-white"
+        className="relative flex-1 w-full h-full flex items-center justify-center cursor-crosshair overflow-hidden p-3 sm:p-6 bg-white"
       >
         {/* Subtle Engineering CAD Grid */}
         {showGrid && (
@@ -167,7 +169,7 @@ export default function HardwareCanvas({
         )}
 
         {/* Viewfinder Corner Overlays */}
-        <div className="absolute inset-4 pointer-events-none border border-slate-200/60 rounded-xl z-20">
+        <div className="absolute inset-2 sm:inset-4 pointer-events-none border border-slate-200/60 rounded-xl z-20">
           <div className="absolute top-0 left-0 w-3 h-3 border-t-2 border-l-2 border-teal-600"></div>
           <div className="absolute top-0 right-0 w-3 h-3 border-t-2 border-r-2 border-teal-600"></div>
           <div className="absolute bottom-0 left-0 w-3 h-3 border-b-2 border-l-2 border-teal-600"></div>
@@ -337,36 +339,63 @@ export default function HardwareCanvas({
                 {hoveredPart.designator}
               </div>
               <div className="text-[9px] text-slate-400 mt-1 font-mono">
-                CLICK TO EXECUTE MUSE SPARK DIAGNOSTIC
+                TAP TO VIEW TEARDOWN & REPAIR GUIDE
               </div>
             </div>
           )}
         </div>
+
+        {/* Mobile Quick Action Pill */}
+        {selectedPart && onOpenGuideTab && (
+          <div className="lg:hidden absolute bottom-3 inset-x-3 z-30 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2.5 shadow-lg flex items-center justify-between gap-2.5 animate-fadeIn">
+            <div className="min-w-0">
+              <div className="flex items-center gap-1.5">
+                <span
+                  className={`w-2 h-2 rounded-full ${
+                    selectedPart.status === 'critical'
+                      ? 'bg-red-500'
+                      : selectedPart.status === 'warning'
+                      ? 'bg-amber-500'
+                      : 'bg-teal-500'
+                  }`}
+                />
+                <span className="text-[10px] font-mono text-slate-400 truncate uppercase">
+                  {selectedPart.designator.split(' - ')[0]}
+                </span>
+              </div>
+              <div className="text-xs font-bold text-slate-900 truncate mt-0.5">{selectedPart.name}</div>
+            </div>
+            <button
+              onClick={onOpenGuideTab}
+              className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-xs transition-transform"
+            >
+              <span>Teardown</span>
+              <ArrowRight className="w-3.5 h-3.5" />
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* Industrial Inspection Footer (Clean White) */}
-      <div className="px-4 py-2.5 bg-white border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 z-20">
-        <div className="flex items-center gap-3">
-          <span className="flex items-center gap-1.5 text-slate-700 font-mono text-[11px]">
-            <Crosshair className="w-3.5 h-3.5 text-teal-600" />
-            Click component or point to invoke <strong>SAM 3.1</strong>
+      {/* Industrial Inspection Footer */}
+      <div className="px-3 sm:px-4 py-2 sm:py-2.5 bg-white border-t border-slate-100 flex items-center justify-between text-xs text-slate-500 z-20">
+        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
+          <span className="flex items-center gap-1.5 text-slate-700 font-mono text-[10px] sm:text-[11px] truncate">
+            <Crosshair className="w-3.5 h-3.5 text-teal-600 shrink-0" />
+            Tap component or defect to inspect
           </span>
           <span className="hidden md:inline text-slate-200">|</span>
           <span className="hidden md:inline font-mono text-[11px] text-slate-400">
-            Inference: <strong className="text-teal-600">&lt;140ms</strong> via Baseten 2M TPM
+            Inference: <strong className="text-teal-600">&lt;140ms</strong>
           </span>
         </div>
 
         {/* Status Legend */}
-        <div className="flex items-center gap-3 font-mono text-[11px]">
-          <span className="flex items-center gap-1.5 text-red-600 font-medium">
+        <div className="flex items-center gap-2 sm:gap-3 font-mono text-[10px] sm:text-[11px] shrink-0">
+          <span className="flex items-center gap-1 text-red-600 font-medium">
             <span className="w-2 h-2 rounded-full bg-red-500"></span> Critical
           </span>
-          <span className="flex items-center gap-1.5 text-amber-600 font-medium">
+          <span className="flex items-center gap-1 text-amber-600 font-medium">
             <span className="w-2 h-2 rounded-full bg-amber-500"></span> Warning
-          </span>
-          <span className="flex items-center gap-1.5 text-teal-600 font-medium">
-            <span className="w-2 h-2 rounded-full bg-teal-500"></span> Normal
           </span>
         </div>
       </div>

@@ -1,29 +1,57 @@
 import React, { useRef, useState, useEffect } from 'react';
-import { Camera, X, RefreshCw, Check, AlertCircle } from 'lucide-react';
+import { Camera, X, RefreshCw, Check, AlertCircle, FlipHorizontal, Zap, ZapOff } from 'lucide-react';
 
 export default function CameraModal({ onCapture, onClose }) {
   const videoRef = useRef(null);
   const [stream, setStream] = useState(null);
   const [capturedImage, setCapturedImage] = useState(null);
   const [cameraError, setCameraError] = useState(null);
+  const [facingMode, setFacingMode] = useState('environment'); // 'environment' | 'user'
+  const [hasTorch, setHasTorch] = useState(false);
+  const [torchOn, setTorchOn] = useState(false);
 
   useEffect(() => {
     let activeStream = null;
+
     async function startCamera() {
+      // Stop any existing tracks
+      if (stream) {
+        stream.getTracks().forEach((track) => track.stop());
+      }
+      setCameraError(null);
+
       try {
-        const s = await navigator.mediaDevices.getUserMedia({
-          video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-        });
+        const constraints = {
+          video: {
+            facingMode: { ideal: facingMode },
+            width: { ideal: 1920 },
+            height: { ideal: 1080 }
+          },
+          audio: false
+        };
+
+        const s = await navigator.mediaDevices.getUserMedia(constraints);
         activeStream = s;
         setStream(s);
+
         if (videoRef.current) {
           videoRef.current.srcObject = s;
         }
+
+        // Check torch support
+        const track = s.getVideoTracks()[0];
+        const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+        if (capabilities.torch) {
+          setHasTorch(true);
+        }
       } catch (err) {
-        console.warn('Camera access denied or unavailable:', err);
-        setCameraError('Unable to access camera. Please allow camera permissions or upload an image file instead.');
+        console.warn('Camera access error:', err);
+        setCameraError(
+          'Unable to access camera. Please ensure camera permissions are allowed, or tap Upload to select a photo from your gallery.'
+        );
       }
     }
+
     startCamera();
 
     return () => {
@@ -31,7 +59,26 @@ export default function CameraModal({ onCapture, onClose }) {
         activeStream.getTracks().forEach((track) => track.stop());
       }
     };
-  }, []);
+  }, [facingMode]);
+
+  const toggleCamera = () => {
+    setFacingMode((prev) => (prev === 'environment' ? 'user' : 'environment'));
+  };
+
+  const toggleTorch = async () => {
+    if (!stream) return;
+    const track = stream.getVideoTracks()[0];
+    if (track && hasTorch) {
+      try {
+        await track.applyConstraints({
+          advanced: [{ torch: !torchOn }]
+        });
+        setTorchOn(!torchOn);
+      } catch (err) {
+        console.warn('Torch failed:', err);
+      }
+    }
+  };
 
   const handleSnap = () => {
     if (!videoRef.current) return;
@@ -43,6 +90,12 @@ export default function CameraModal({ onCapture, onClose }) {
     ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
     const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
     setCapturedImage(dataUrl);
+
+    // Turn off torch if it was on
+    if (torchOn && stream) {
+      const track = stream.getVideoTracks()[0];
+      track.applyConstraints({ advanced: [{ torch: false }] }).catch(() => {});
+    }
   };
 
   const handleRetake = () => {
@@ -58,103 +111,130 @@ export default function CameraModal({ onCapture, onClose }) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-      <div className="w-full max-w-xl bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden flex flex-col">
-        {/* Header */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between bg-slate-50">
-          <div className="flex items-center gap-2">
-            <div className="w-7 h-7 rounded-lg bg-teal-50 border border-teal-100 flex items-center justify-center text-teal-600">
-              <Camera className="w-4 h-4" />
-            </div>
-            <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider font-mono">
-              Live Hardware Camera Capture
-            </h3>
-          </div>
-          <button
-            onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-700 rounded-lg hover:bg-slate-100"
-          >
-            <X className="w-5 h-5" />
-          </button>
+    <div className="fixed inset-0 z-50 bg-black flex flex-col justify-between text-white safe-top safe-bottom">
+      {/* Top Mobile Camera Bar */}
+      <div className="p-4 flex items-center justify-between z-20 bg-gradient-to-b from-black/80 to-transparent">
+        <button
+          onClick={onClose}
+          className="p-2 text-white/80 hover:text-white rounded-full bg-white/10 backdrop-blur-md transition-colors"
+          title="Close Camera"
+        >
+          <X className="w-5 h-5" />
+        </button>
+
+        <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-black/40 backdrop-blur-md border border-white/10 text-[11px] font-mono text-teal-300">
+          <span className="w-2 h-2 rounded-full bg-teal-400 animate-pulse"></span>
+          <span>FIX-LENS OPTICAL SCANNER</span>
         </div>
 
-        {/* Viewfinder Body */}
-        <div className="relative bg-slate-950 aspect-video flex items-center justify-center overflow-hidden">
-          {cameraError ? (
-            <div className="p-6 text-center text-slate-300 max-w-sm">
-              <AlertCircle className="w-10 h-10 text-amber-500 mx-auto mb-3" />
-              <p className="text-xs leading-relaxed mb-4">{cameraError}</p>
-              <button
-                onClick={onClose}
-                className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold"
-              >
-                Close & Use Upload Instead
-              </button>
-            </div>
-          ) : capturedImage ? (
-            <img src={capturedImage} alt="Captured" className="w-full h-full object-cover" />
-          ) : (
-            <>
-              <video
-                ref={videoRef}
-                autoPlay
-                playsInline
-                muted
-                className="w-full h-full object-cover"
-              />
-              {/* Camera reticle overlay */}
-              <div className="absolute inset-8 pointer-events-none border border-teal-500/40 rounded-2xl">
-                <div className="absolute top-0 left-0 w-4 h-4 border-t-2 border-l-2 border-teal-400"></div>
-                <div className="absolute top-0 right-0 w-4 h-4 border-t-2 border-r-2 border-teal-400"></div>
-                <div className="absolute bottom-0 left-0 w-4 h-4 border-b-2 border-l-2 border-teal-400"></div>
-                <div className="absolute bottom-0 right-0 w-4 h-4 border-b-2 border-r-2 border-teal-400"></div>
-                <div className="absolute inset-0 flex items-center justify-center">
-                  <div className="w-6 h-6 border border-teal-400/60 rounded-full flex items-center justify-center">
-                    <div className="w-1.5 h-1.5 bg-teal-400 rounded-full"></div>
-                  </div>
+        <div className="flex items-center gap-2">
+          {hasTorch && (
+            <button
+              onClick={toggleTorch}
+              className={`p-2 rounded-full backdrop-blur-md transition-colors ${
+                torchOn ? 'bg-amber-400 text-black' : 'bg-white/10 text-white/80 hover:text-white'
+              }`}
+              title="Toggle Flashlight"
+            >
+              {torchOn ? <Zap className="w-4 h-4" /> : <ZapOff className="w-4 h-4" />}
+            </button>
+          )}
+
+          <button
+            onClick={toggleCamera}
+            className="p-2 text-white/80 hover:text-white rounded-full bg-white/10 backdrop-blur-md transition-colors"
+            title="Switch Camera (Front/Rear)"
+          >
+            <FlipHorizontal className="w-4 h-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Main Viewfinder Center */}
+      <div className="relative flex-1 w-full h-full flex items-center justify-center overflow-hidden bg-black">
+        {cameraError ? (
+          <div className="p-6 text-center text-slate-300 max-w-sm">
+            <AlertCircle className="w-12 h-12 text-amber-500 mx-auto mb-3" />
+            <h3 className="text-sm font-bold text-white mb-2">Camera Unavailable</h3>
+            <p className="text-xs leading-relaxed mb-5 text-slate-400">{cameraError}</p>
+            <button
+              onClick={onClose}
+              className="px-5 py-2.5 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-xs font-semibold"
+            >
+              Close & Upload Image File Instead
+            </button>
+          </div>
+        ) : capturedImage ? (
+          <img
+            src={capturedImage}
+            alt="Captured Hardware"
+            className="w-full h-full object-contain"
+          />
+        ) : (
+          <>
+            <video
+              ref={videoRef}
+              autoPlay
+              playsInline
+              muted
+              className="w-full h-full object-cover"
+            />
+
+            {/* Precision Optical Viewfinder Reticle */}
+            <div className="absolute inset-8 sm:inset-16 pointer-events-none border border-teal-400/40 rounded-3xl">
+              <div className="absolute top-0 left-0 w-6 h-6 border-t-3 border-l-3 border-teal-400"></div>
+              <div className="absolute top-0 right-0 w-6 h-6 border-t-3 border-r-3 border-teal-400"></div>
+              <div className="absolute bottom-0 left-0 w-6 h-6 border-b-3 border-l-3 border-teal-400"></div>
+              <div className="absolute bottom-0 right-0 w-6 h-6 border-b-3 border-r-3 border-teal-400"></div>
+
+              {/* Center Crosshair Target */}
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="relative w-12 h-12 flex items-center justify-center">
+                  <div className="w-8 h-8 rounded-full border border-teal-400/50"></div>
+                  <div className="w-2 h-2 rounded-full bg-teal-400 shadow-sm shadow-teal-300"></div>
                 </div>
               </div>
-            </>
-          )}
-        </div>
 
-        {/* Footer Controls */}
-        <div className="p-4 border-t border-slate-100 bg-white flex items-center justify-between">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-600"
-          >
-            Cancel
-          </button>
-
-          {!cameraError && (
-            <div className="flex items-center gap-2">
-              {capturedImage ? (
-                <>
-                  <button
-                    onClick={handleRetake}
-                    className="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-semibold flex items-center gap-1.5"
-                  >
-                    <RefreshCw className="w-3.5 h-3.5" /> Retake
-                  </button>
-                  <button
-                    onClick={handleConfirm}
-                    className="px-5 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-sm"
-                  >
-                    <Check className="w-3.5 h-3.5" /> Use Photo & Detect Faults
-                  </button>
-                </>
-              ) : (
-                <button
-                  onClick={handleSnap}
-                  className="px-6 py-2.5 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold flex items-center gap-2 shadow-sm"
-                >
-                  <Camera className="w-4 h-4" /> Snap Photo
-                </button>
-              )}
+              {/* Hint badge */}
+              <div className="absolute bottom-4 inset-x-0 text-center">
+                <span className="px-3 py-1 rounded-full bg-black/60 backdrop-blur-md text-[11px] font-mono text-slate-300 border border-white/10">
+                  Align defect or component inside box
+                </span>
+              </div>
             </div>
-          )}
-        </div>
+          </>
+        )}
+      </div>
+
+      {/* Bottom Shutter & Action Bar (Native Mobile Camera Layout) */}
+      <div className="p-6 bg-gradient-to-t from-black/90 to-transparent flex items-center justify-around z-20">
+        {capturedImage ? (
+          <div className="flex items-center justify-between w-full max-w-sm mx-auto gap-4">
+            <button
+              onClick={handleRetake}
+              className="flex-1 py-3 bg-white/15 hover:bg-white/20 text-white font-semibold rounded-2xl text-xs flex items-center justify-center gap-2 backdrop-blur-md transition-all active:scale-95"
+            >
+              <RefreshCw className="w-4 h-4" /> Retake
+            </button>
+            <button
+              onClick={handleConfirm}
+              className="flex-1 py-3 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-2xl text-xs flex items-center justify-center gap-2 shadow-lg shadow-teal-900/40 transition-all active:scale-95"
+            >
+              <Check className="w-4 h-4" /> Analyze Defect
+            </button>
+          </div>
+        ) : (
+          <div className="flex items-center justify-center w-full">
+            {/* Native Touch Shutter Button */}
+            <button
+              onClick={handleSnap}
+              className="relative w-20 h-20 rounded-full border-4 border-white flex items-center justify-center active:scale-90 transition-transform shadow-xl"
+              title="Snap Hardware Photo"
+            >
+              <div className="w-16 h-16 rounded-full bg-white hover:bg-slate-200 transition-colors"></div>
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );
