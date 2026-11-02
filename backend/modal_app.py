@@ -27,16 +27,18 @@ secrets = [
 ]
 
 def parse_hardware_json(raw_text: str) -> Optional[Dict[str, Any]]:
+    if not raw_text:
+        return None
     clean = raw_text.strip()
     if "```json" in clean:
         clean = clean.split("```json")[1].split("```")[0].strip()
     elif "```" in clean:
         clean = clean.split("```")[1].split("```")[0].strip()
 
-    if "{" in clean:
-        start_idx = clean.find("{")
-        end_idx = clean.rfind("}") + 1 if "}" in clean else len(clean)
-        clean = clean[start_idx:end_idx]
+    start_idx = clean.find("{")
+    if start_idx == -1:
+        return None
+    clean = clean[start_idx:]
 
     # Attempt 1: Direct JSON parsing
     try:
@@ -44,12 +46,56 @@ def parse_hardware_json(raw_text: str) -> Optional[Dict[str, Any]]:
     except Exception:
         pass
 
-    # Attempt 2: Auto-repair unclosed string/bracket
-    for suffix in ['"}', '"]}', '"}', '}']:
+    # Attempt 2: Last closing brace
+    last_brace = clean.rfind("}")
+    if last_brace != -1:
         try:
-            return json.loads(clean + suffix)
+            return json.loads(clean[:last_brace + 1])
         except Exception:
+            pass
+
+    # Attempt 3: Stack-based auto-repair for streaming / truncated JSON
+    in_quote = False
+    escape = False
+    stack = []
+    last_valid_pos = 0
+
+    for idx, ch in enumerate(clean):
+        if escape:
+            escape = False
             continue
+        if ch == "\\":
+            escape = True
+            continue
+        if ch == '"':
+            in_quote = not in_quote
+            continue
+        if not in_quote:
+            if ch in ('{', '['):
+                stack.append(ch)
+            elif ch in ('}', ']'):
+                if stack:
+                    stack.pop()
+                    if not stack:
+                        last_valid_pos = idx + 1
+
+    if last_valid_pos > 0:
+        try:
+            return json.loads(clean[:last_valid_pos])
+        except Exception:
+            pass
+
+    closure = '"' if in_quote else ''
+    for open_ch in reversed(stack):
+        closure += '}' if open_ch == '{' else ']'
+
+    for trim in range(0, min(80, len(clean))):
+        prefix = clean if trim == 0 else clean[:-trim].rstrip()
+        for c in [closure, '"}', '"]}', '}', ']']:
+            try:
+                return json.loads(prefix + c)
+            except Exception:
+                continue
 
     return None
 
@@ -95,9 +141,9 @@ def diagnose(req: DiagnoseRequest) -> Dict[str, Any]:
                 {"role": "system", "content": system_prompt},
                 {"role": "user", "content": user_prompt}
             ],
-            max_tokens=4096,
+            max_tokens=8192,
             temperature=0.2,
-            timeout=45.0
+            timeout=65.0
         )
 
         msg = response.choices[0].message
@@ -294,9 +340,9 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
                     ]
                 }
             ],
-            max_tokens=4096,
+            max_tokens=8192,
             temperature=0.2,
-            timeout=45.0
+            timeout=65.0
         )
         msg = response.choices[0].message
         raw = msg.content or ""
