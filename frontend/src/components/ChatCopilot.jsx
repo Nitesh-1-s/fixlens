@@ -3,6 +3,83 @@ import { Send, Bot, User, Sparkles, AlertCircle, RefreshCw, Image as ImageIcon, 
 
 const LIVE_CHAT_API_URL = "https://nitesh-naasai--fixlens-backend-chat.us-east.modal.run";
 
+// High-quality, problem-solving, beginner-friendly answer generator
+function generateBeginnerFriendlyResponse(query, part, scenario) {
+  const q = (query || '').toLowerCase();
+  const prodName = part?.deviceName || scenario?.title || 'Physical Hardware Assembly';
+  const compName = part?.name || 'Hardware Component';
+  const layman = part?.laymanSummary || 'This is a vital operating component of your equipment.';
+  const fixGuide = part?.laymanFixGuide || 'Follow the step-by-step checklist to service this part safely.';
+  const tools = part?.tools && part.tools.length > 0 ? part.tools.join(', ') : 'Standard screwdriver and cleaning wipes';
+  const safety = part?.safetyAlert || 'Always unplug all power cords from the wall before touching any metal parts!';
+  const savings = part?.diySavings || scenario?.diySavings || 'Saves ~$120 vs professional repair shop';
+  const beginner = part?.beginnerFriendly || 'Yes — DIY friendly with basic household tools';
+  const steps = part?.steps || [];
+
+  if (q.includes('what is this') || q.includes('everyday life') || q.includes('what does it do') || q.includes('item')) {
+    return (
+      `Great question! Here is what you are looking at in plain English:\n\n` +
+      `• **The Device:** **${prodName}**\n` +
+      `• **Target Component:** **${compName}**\n\n` +
+      `💡 **What it does in everyday life:**\n${layman}\n\n` +
+      `⚠️ **What went wrong:**\n${part?.diagnosis || 'The part has experienced heat or mechanical wear and needs servicing.'}\n\n` +
+      `🛠️ **How to solve it:**\n${fixGuide}\n\n` +
+      `💰 **DIY Value:** ${savings} by fixing it yourself!`
+    );
+  }
+
+  if (q.includes('beginner') || q.includes('safe') || q.includes('can i fix')) {
+    return (
+      `👍 **Yes, you can definitely fix this!**\n\n` +
+      `• **Beginner Difficulty:** ${beginner}\n` +
+      `• **Estimated Time:** ${part?.repairMetrics?.estTime || '15-20 minutes'}\n` +
+      `• **Cost of Replacement Part:** ${part?.repairMetrics?.estCost || '$3.00 - $6.00'}\n\n` +
+      `🛑 **First Safety Rule:**\n${safety}\n\n` +
+      `As long as you unplug the power first, this is a very safe and straightforward repair. Just follow the 5 steps in the Teardown tab!`
+    );
+  }
+
+  if (q.includes('tool') || q.includes('household')) {
+    return (
+      `🔧 **Here are the tools you'll need:**\n\n` +
+      (part?.tools?.map((t, idx) => `${idx + 1}. **${t}**`).join('\n') || `• ${tools}`) +
+      `\n\n💡 **Tip:** Most of these are standard household items or can be purchased online for under $5. You do not need expensive specialized equipment!`
+    );
+  }
+
+  if (q.includes('safety') || q.includes('first rule') || q.includes('touch')) {
+    return (
+      `🛡️ **Crucial Safety Rule Before You Touch Anything:**\n\n` +
+      `**${safety}**\n\n` +
+      `• Never work on electronics while plugged in.\n` +
+      `• If the device was running recently, let it cool down for 10-15 minutes so you don't burn your fingers.\n` +
+      `• Work on a clean, dry table under bright lighting.`
+    );
+  }
+
+  if (q.includes('step') || q.includes('walk me through') || q.includes('how to fix') || q.includes('finish')) {
+    const stepsList = steps.length > 0
+      ? steps.map((s, idx) => `**Step ${idx + 1}:** ${s}`).join('\n\n')
+      : `1. Power off device completely.\n2. Access the ${compName}.\n3. Replace or clean worn part.\n4. Re-assemble and test.`;
+
+    return (
+      `📋 **Here is your step-by-step repair walkthrough:**\n\n` +
+      `${stepsList}\n\n` +
+      `👉 **Check off each step** in the "Teardown & Repair Steps" tab as you complete it!`
+    );
+  }
+
+  // General problem-solving response
+  return (
+    `Here is the problem-solving guide for the **${compName}** on your **${prodName}**:\n\n` +
+    `1. **The Issue:** ${layman}\n\n` +
+    `2. **How to Fix It:** ${fixGuide}\n\n` +
+    `3. **Tools Needed:** ${tools}\n\n` +
+    `4. **Safety Warning:** ${safety}\n\n` +
+    `5. **Next Action:** Click the "Teardown & Repair Steps" tab to follow the visual checklist!`
+  );
+}
+
 export default function ChatCopilot({ part, scenario }) {
   const imageSrc =
     scenario?.customImageUrl ||
@@ -18,7 +95,7 @@ export default function ChatCopilot({ part, scenario }) {
     {
       id: 'welcome',
       role: 'assistant',
-      content: `👋 **Hi! I analyzed your uploaded image.**\n\n• **Identified Product:** **${productTitle}**\n• **Detected Defect:** **${part?.name || 'Hardware Component'}** (${part?.designator || 'FAULT-1'})\n\nIf you don't know what this product is or how to fix it, don't worry at all! I'm here to explain everything in plain English, tell you if it's safe to DIY, and walk you through every step. Tap any question below or ask me anything!`
+      content: `👋 **Hi! I analyzed your hardware image.**\n\n• **Product:** **${productTitle}**\n• **Target Component:** **${part?.name || 'Hardware Component'}**\n• **Detected Issue:** ${part?.laymanSummary || 'Wear or degradation identified on this part.'}\n\nIf you're completely new to fixing things, don't worry at all! Tap any question below or ask me anything — I explain everything in simple, everyday English.`
     }
   ]);
   const [input, setInput] = useState('');
@@ -41,7 +118,7 @@ export default function ChatCopilot({ part, scenario }) {
         {
           id: `welcome_${Date.now()}`,
           role: 'assistant',
-          content: `👋 **Hi! I analyzed your image for this project:**\n\n• **Product:** **${part?.deviceName || scenario?.title || 'Hardware System'}**\n• **Target Component:** **${part.name}** (${part.designator})\n• **Status:** ${part.statusLabel || part.status.toUpperCase()}\n\nIf you're completely new to this, don't worry! Ask me what this device does, what tools you need, or whether it's safe for a beginner to fix.`
+          content: `👋 **Hi! I analyzed your hardware image.**\n\n• **Product:** **${part?.deviceName || scenario?.title || 'Hardware System'}**\n• **Target Component:** **${part.name}**\n• **Status:** ${part.statusLabel ? part.statusLabel.split(':')[0] : part.status.toUpperCase()}\n\n${part.laymanSummary || 'Defect identified. Ask me what this does, what tools you need, or how to fix it step-by-step!'}`
         }
       ]);
     }
@@ -61,30 +138,38 @@ export default function ChatCopilot({ part, scenario }) {
     setInput('');
     setIsLoading(true);
 
+    // Prepare resilient beginner-friendly response immediately
+    const synthesizedAnswer = generateBeginnerFriendlyResponse(query.trim(), part, scenario);
+
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 12000); // 12 second network timeout
+
       const response = await fetch(LIVE_CHAT_API_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        signal: controller.signal,
         body: JSON.stringify({
           message: query.trim(),
           component_name: part?.name || 'Hardware Component',
           product_name: part?.deviceName || scenario?.title || 'Physical Hardware Assembly',
-          context: `Device: ${part?.deviceName || scenario?.title || 'Hardware'}. Layman Explanation: ${part?.laymanSummary || ''}. Diagnosis: ${part?.diagnosis || ''}. Tools: ${part?.tools?.join(', ') || ''}. Steps: ${part?.steps?.join(' -> ') || ''}. Safety Alert: ${part?.safetyAlert || ''}`,
+          context: `Device: ${part?.deviceName || scenario?.title || 'Hardware'}. Problem Explanation: ${part?.laymanSummary || ''}. Diagnosis: ${part?.diagnosis || ''}. Tools: ${part?.tools?.join(', ') || ''}. Steps: ${part?.steps?.join(' -> ') || ''}. Safety: ${part?.safetyAlert || ''}`,
           image_base64: scenario?.customImageUrl?.startsWith('data:') ? scenario.customImageUrl : null,
-          history: messages.slice(-5).map((m) => ({ role: m.role, content: m.content }))
+          history: messages.slice(-4).map((m) => ({ role: m.role, content: m.content }))
         })
       });
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         const data = await response.json();
         let replyText = (data.reply || data.content || "").trim();
-        if (!replyText || replyText === "Inspection analysis complete.") {
-          replyText = `Here is what you need to know about the **${part?.name || 'component'}** on this **${productTitle}**:\n\n` +
-            `• **Overview:** ${part?.laymanSummary || 'This is a key functional part of the device.'}\n\n` +
-            `• **Diagnosis:** ${part?.diagnosis || 'Thermal and mechanical degradation observed.'}\n\n` +
-            `• **Safety First:** ${part?.safetyAlert || 'Always ensure the device is completely de-energized before touching any metal leads.'}\n\n` +
-            `• **Recommended Action:** ${part?.laymanFixGuide || 'Follow the step-by-step repair guide to service or replace this part safely.'}`;
+
+        // Guard against any empty or generic placeholder output
+        if (!replyText || replyText.length < 25 || replyText.includes("Inspection analysis complete")) {
+          replyText = synthesizedAnswer;
         }
+
         setMessages((prev) => [
           ...prev,
           {
@@ -95,24 +180,16 @@ export default function ChatCopilot({ part, scenario }) {
           }
         ]);
       } else {
-        throw new Error(`Server returned ${response.status}`);
+        throw new Error(`Server returned status ${response.status}`);
       }
     } catch (err) {
-      console.warn("Chat API error, using intelligent fallback response:", err);
-      // Helpful, beginner-accessible fallback response
-      let fallbackText = `Here is what to know about this **${productTitle}**:\n\n` +
-        `1. **What is it?** ${part?.laymanSummary || 'This is an essential operational component of the system.'}\n` +
-        `2. **Can a beginner fix it?** ${part?.beginnerFriendly || 'Yes, with standard caution.'}\n` +
-        `3. **First Safety Rule:** ${part?.safetyAlert || 'Always unplug or disconnect all power sources first.'}\n` +
-        `4. **Tools Needed:** ${part?.tools?.join(', ') || 'Standard screwdriver and cleaning wipes.'}\n` +
-        `5. **Next Step:** ${part?.steps?.[0] || 'Inspect the part visually under bright light.'}`;
-
+      console.warn("Using intelligent beginner-friendly response fallback:", err);
       setMessages((prev) => [
         ...prev,
         {
           id: `ai_${Date.now()}`,
           role: 'assistant',
-          content: fallbackText
+          content: synthesizedAnswer
         }
       ]);
     } finally {
@@ -223,7 +300,7 @@ export default function ChatCopilot({ part, scenario }) {
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce [animation-delay:0.2s]"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce [animation-delay:0.4s]"></span>
-              <span className="font-mono text-[10px] text-slate-400 ml-1">Meta Muse Spark Open thinking...</span>
+              <span className="font-mono text-[10px] text-slate-400 ml-1">FixLens AI analyzing defect...</span>
             </div>
           </div>
         )}
