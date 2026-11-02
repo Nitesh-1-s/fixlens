@@ -1,115 +1,114 @@
 import React, { useEffect, useState } from 'react';
-import Logo from './Logo';
 
 export default function LoadingScreen({ onFinish }) {
   const [progress, setProgress] = useState(0);
   const [logIndex, setLogIndex] = useState(0);
+  const [isExiting, setIsExiting] = useState(false);
 
-  const logs = [
-    { code: 'SYS.01', label: 'Initializing Vision Diagnostic Pipeline' },
-    { code: 'SAM.31', label: 'Allocating Zero-Shot Segmentation Engine' },
-    { code: 'META.LLM', label: 'Connecting Baseten 2M TPM: muse-spark-open-1026' },
-    { code: 'OPT.CAD', label: 'Calibrating Sub-Pixel Hardware Coordinate Frame' },
-    { code: 'READY', label: 'Inspection Workbench Online' },
+  const steps = [
+    'Initializing optical metrology core...',
+    'Calibrating SAM-3.1 spatial segmentation...',
+    'Connecting Meta Muse Spark Open (2M TPM)...',
+    'Hardware Copilot Ready'
   ];
 
   useEffect(() => {
     const interval = setInterval(() => {
       setProgress((prev) => {
-        const next = prev + 1.6;
+        const next = prev + 1.8;
         if (next >= 100) {
           clearInterval(interval);
-          setTimeout(() => onFinish?.(), 350);
+          setIsExiting(true);
+          setTimeout(() => onFinish?.(), 450);
           return 100;
         }
         return next;
       });
-    }, 28);
+    }, 24);
 
     return () => clearInterval(interval);
   }, [onFinish]);
 
   useEffect(() => {
-    const step = Math.min(Math.floor((progress / 100) * logs.length), logs.length - 1);
-    setLogIndex(step);
-  }, [progress, logs.length]);
+    const idx = Math.min(Math.floor((progress / 100) * steps.length), steps.length - 1);
+    setLogIndex(idx);
+  }, [progress, steps.length]);
 
   return (
-    <div className="fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 select-none">
-      {/* Background CAD Calibration Grid */}
+    <div
+      className={`fixed inset-0 z-[100] bg-white flex flex-col items-center justify-center p-6 select-none transition-all duration-500 ease-out ${
+        isExiting ? 'opacity-0 scale-105 pointer-events-none' : 'opacity-100 scale-100'
+      }`}
+    >
+      {/* Subtle Background CAD Dot Matrix */}
       <div
-        className="absolute inset-0 pointer-events-none opacity-[0.035]"
+        className="absolute inset-0 pointer-events-none opacity-[0.03]"
         style={{
-          backgroundImage:
-            'radial-gradient(#0F172A 1px, transparent 1px), radial-gradient(#0F172A 1px, transparent 1px)',
-          backgroundSize: '24px 24px',
-          backgroundPosition: '0 0, 12px 12px',
+          backgroundImage: 'radial-gradient(#0F172A 1.5px, transparent 1.5px)',
+          backgroundSize: '28px 28px',
         }}
       />
 
-      {/* Corner Registration Marks (Industrial Vision Look) */}
-      <div className="absolute top-8 left-8 text-slate-300 font-mono text-[10px] tracking-widest hidden sm:block">
-        + CORNER_TL [0, 0]
-      </div>
-      <div className="absolute top-8 right-8 text-slate-300 font-mono text-[10px] tracking-widest hidden sm:block">
-        + CORNER_TR [1920, 0]
-      </div>
-      <div className="absolute bottom-8 left-8 text-slate-300 font-mono text-[10px] tracking-widest hidden sm:block">
-        + CORNER_BL [0, 1080]
-      </div>
-      <div className="absolute bottom-8 right-8 text-slate-300 font-mono text-[10px] tracking-widest hidden sm:block">
-        + CORNER_BR [1920, 1080]
-      </div>
-
-      {/* Central Module */}
       <div className="relative z-10 w-full max-w-sm flex flex-col items-center text-center">
-        {/* Optical Alignment Animation */}
-        <div className="relative w-24 h-24 mb-6 flex items-center justify-center">
-          {/* Outer Rotating Calibration Ring */}
-          <div className="absolute inset-0 rounded-full border border-dashed border-teal-600/30 animate-spin-slow" />
+        {/* Optical Aperture Reticle Animation */}
+        <div className="relative w-28 h-28 mb-7 flex items-center justify-center">
+          {/* Outer Rotating Calibration Ring with Crosshair Ticks */}
+          <div className="absolute inset-0 rounded-full border-2 border-dashed border-teal-600/30 animate-spin-slow" />
           
-          {/* Inner Reticle Pulse */}
-          <div className="absolute inset-2 rounded-full border border-slate-200" />
+          {/* Reverse Rotating Counter Ring */}
+          <div className="absolute inset-2.5 rounded-full border border-dotted border-slate-300 animate-spin-reverse" />
           
-          {/* Primary Logo */}
-          <div className="relative z-10 transition-transform duration-300 transform scale-110">
-            <Logo size={44} />
+          {/* Camera Aperture Hexagon Reticle */}
+          <div className="absolute inset-5 rounded-2xl border border-teal-500/40 rotate-45 animate-pulse-lens" />
+
+          {/* Central Optical Sensor Glow */}
+          <div className="relative w-12 h-12 rounded-2xl bg-gradient-to-br from-teal-500 to-teal-700 shadow-lg shadow-teal-600/25 flex items-center justify-center">
+            {/* Precision Lens Shutter SVG */}
+            <svg viewBox="0 0 24 24" className="w-6 h-6 text-white" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="9" />
+              <path d="M12 3v3" />
+              <path d="M12 18v3" />
+              <path d="M3 12h3" />
+              <path d="M18 12h3" />
+              <circle cx="12" cy="12" r="3" fill="currentColor" fillOpacity="0.4" />
+            </svg>
           </div>
         </div>
 
-        {/* Brand Lockup */}
-        <div className="mb-8">
-          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-slate-100 border border-slate-200 mb-2">
-            <span className="w-1.5 h-1.5 rounded-full bg-teal-600 animate-pulse"></span>
-            <span className="text-[10px] font-mono font-semibold tracking-wider text-slate-600 uppercase">
-              System Diagnostics Core
-            </span>
+        {/* Unique FIXLENS Brand Typography with Laser Scan Beam */}
+        <div className="relative mb-6">
+          <div className="relative inline-flex items-center justify-center overflow-hidden px-4 py-1">
+            <h1 className="text-4xl sm:text-5xl font-black tracking-[0.22em] select-none uppercase">
+              <span className="text-slate-900 drop-shadow-xs">FIX</span>
+              <span className="text-teal-600 drop-shadow-xs">LENS</span>
+            </h1>
+
+            {/* Glowing Laser Optical Scan Beam that Sweeps Over FIXLENS */}
+            <div className="absolute inset-0 w-1/3 bg-gradient-to-r from-transparent via-teal-400/40 to-transparent skew-x-[-25deg] pointer-events-none animate-scan-laser" />
           </div>
-          <h1 className="text-xl font-bold tracking-tight text-slate-900">
-            FixLens Industrial
-          </h1>
-          <p className="text-xs text-slate-400 mt-0.5">
-            Autonomous Multimodal Hardware Inspection
+
+          {/* Minimal Tagline */}
+          <p className="text-[11px] font-mono tracking-widest text-slate-400 uppercase font-semibold mt-1.5 flex items-center justify-center gap-2">
+            <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-pulse"></span>
+            <span>Hardware Diagnostic Copilot</span>
           </p>
         </div>
 
-        {/* Progress & Monospace Telemetry */}
-        <div className="w-full space-y-3">
-          {/* Clean Minimal Progress Bar */}
-          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden border border-slate-200/60">
+        {/* High-Precision Progress Bar */}
+        <div className="w-full max-w-[280px] space-y-2.5">
+          <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden border border-slate-200/80 p-[1px]">
             <div
-              className="h-full bg-teal-600 transition-all duration-75 ease-out rounded-full"
+              className="h-full bg-gradient-to-r from-teal-600 to-teal-400 rounded-full transition-all duration-75 ease-out shadow-xs"
               style={{ width: `${progress}%` }}
             />
           </div>
 
-          {/* Telemetry Output Line */}
-          <div className="flex items-center justify-between text-[11px] font-mono text-slate-500 pt-1">
-            <div className="flex items-center gap-1.5 truncate max-w-[260px] text-left">
-              <span className="text-teal-700 font-bold">[{logs[logIndex].code}]</span>
-              <span className="truncate text-slate-600">{logs[logIndex].label}</span>
-            </div>
-            <span className="font-bold text-slate-800 tabular-nums">
+          {/* Monospace Optical Status & Percentage */}
+          <div className="flex items-center justify-between text-[11px] font-mono text-slate-500">
+            <span className="text-slate-600 truncate max-w-[210px] text-left font-medium">
+              {steps[logIndex]}
+            </span>
+            <span className="font-bold text-teal-700 tabular-nums">
               {Math.min(100, Math.floor(progress))}%
             </span>
           </div>

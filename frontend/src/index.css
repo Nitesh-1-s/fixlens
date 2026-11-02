@@ -46,6 +46,55 @@ body {
   animation: spin-slow 12s linear infinite;
 }
 
+@keyframes spin-reverse {
+  from {
+    transform: rotate(360deg);
+  }
+  to {
+    transform: rotate(0deg);
+  }
+}
+
+.animate-spin-reverse {
+  animation: spin-reverse 8s linear infinite;
+}
+
+@keyframes scan-laser {
+  0% {
+    transform: translateX(-100%);
+    opacity: 0;
+  }
+  30% {
+    opacity: 1;
+  }
+  70% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateX(200%);
+    opacity: 0;
+  }
+}
+
+.animate-scan-laser {
+  animation: scan-laser 2.2s cubic-bezier(0.4, 0, 0.2, 1) infinite;
+}
+
+@keyframes pulse-lens {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 0.9;
+  }
+  50% {
+    transform: scale(1.06);
+    opacity: 1;
+  }
+}
+
+.animate-pulse-lens {
+  animation: pulse-lens 2s ease-in-out infinite;
+}
+
 /* Enterprise Work Order Print Stylesheet */
 @media print {
   body * {

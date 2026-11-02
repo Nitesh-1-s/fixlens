@@ -1,12 +1,9 @@
 import React, { useState } from 'react';
-import { Camera, Upload, Cpu, ShieldCheck, Wrench, CheckCircle2, Crosshair, ArrowRight, Sparkles, HelpCircle } from 'lucide-react';
-import Logo from './Logo';
-import { PRESET_SCENARIOS } from '../data/presets';
+import { Camera, Upload, Cpu, ShieldCheck, Wrench, CheckCircle2, Crosshair, ArrowRight } from 'lucide-react';
 
 export default function UploadCameraEntry({
   onOpenCamera,
-  onFileUpload,
-  onSelectPreset
+  onFileUpload
 }) {
   const [isDragging, setIsDragging] = useState(false);
 
@@ -118,54 +115,6 @@ export default function UploadCameraEntry({
           </label>
         </div>
       </div>
-
-      {/* Quick Test with Sample Hardware (Convenient for mobile testers & judges) */}
-      {onSelectPreset && (
-        <div className="max-w-3xl mx-auto w-full mb-8 bg-slate-50 border border-slate-200 rounded-2xl p-4">
-          <div className="flex items-center justify-between mb-2.5">
-            <span className="text-[11px] font-bold text-slate-700 uppercase tracking-wide font-mono flex items-center gap-1.5">
-              <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-              Or Test With Sample Hardware Scenarios:
-            </span>
-            <span className="text-[10px] text-slate-400 font-mono hidden sm:inline">1-Tap Preset Demos</span>
-          </div>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            {PRESET_SCENARIOS.map((preset) => (
-              <button
-                key={preset.id}
-                onClick={() => onSelectPreset(preset)}
-                className="p-2.5 bg-white border border-slate-200 hover:border-teal-400 rounded-xl text-left transition-all hover:bg-teal-50/30 flex items-center gap-2.5 group"
-              >
-                <div className="w-8 h-8 rounded-lg overflow-hidden bg-slate-100 shrink-0 border border-slate-200">
-                  <img
-                    src={
-                      preset.id === 'motherboard'
-                        ? '/images/motherboard.png'
-                        : preset.id === 'printer3d'
-                        ? '/images/printer3d.png'
-                        : '/images/automotive.png'
-                    }
-                    alt={preset.title}
-                    className="w-full h-full object-cover"
-                  />
-                </div>
-                <div className="min-w-0">
-                  <div className="text-xs font-bold text-slate-800 truncate group-hover:text-teal-700">
-                    {preset.id === 'automotive'
-                      ? 'Car Alternator'
-                      : preset.id === 'printer3d'
-                      ? '3D Printer Hotend'
-                      : 'Motherboard VRM'}
-                  </div>
-                  <div className="text-[10px] text-slate-400 truncate font-mono">
-                    {preset.parts.length} failure zones
-                  </div>
-                </div>
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
 
       {/* Feature Specs: Engineering Flat Telemetry */}
       <div className="max-w-3xl mx-auto w-full grid grid-cols-2 sm:grid-cols-4 gap-2.5 text-center">
