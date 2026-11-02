@@ -152,6 +152,74 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
               </div>
             )}
 
+            {/* Step-by-Step Procedure Checklist (Placed at the TOP for instant laptop & mobile access) */}
+            <div>
+              <div className="flex items-center justify-between mb-1.5">
+                <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-500 flex items-center gap-1.5 font-mono">
+                  <CheckSquare className="w-3.5 h-3.5 text-teal-600" />
+                  Step-by-Step Procedure ({completedCount}/{part.steps?.length || 0})
+                </h4>
+                <span className="text-[10px] font-mono text-teal-700 font-bold">{progressPct}% Complete</span>
+              </div>
+
+              {/* Progress bar */}
+              <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-2">
+                <div
+                  className="h-full bg-teal-600 rounded-full transition-all duration-300"
+                  style={{ width: `${progressPct}%` }}
+                />
+              </div>
+
+              <div className="space-y-1.5">
+                {part.steps?.map((step, idx) => {
+                  const isDone = !!completedSteps[idx];
+                  return (
+                    <div
+                      key={idx}
+                      onClick={() => {
+                        toggleStep(idx);
+                        if (onHighlightPart) onHighlightPart(part);
+                      }}
+                      onMouseEnter={() => {
+                        if (onHighlightPart) onHighlightPart(part);
+                      }}
+                      className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-start gap-2.5 text-xs ${
+                        isDone
+                          ? 'bg-emerald-50/60 border-emerald-200 text-slate-500'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50/30'
+                      }`}
+                      title="Click to check off and locate on hardware photo"
+                    >
+                      {isDone ? (
+                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
+                      ) : (
+                        <Square className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" />
+                      )}
+                      <span className={`leading-relaxed ${isDone ? 'line-through opacity-75' : ''}`}>
+                        <strong className="text-teal-700 mr-1.5">[{idx + 1}]</strong>{step}
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Tools Quick Bar */}
+            {part.tools && part.tools.length > 0 && (
+              <div className="p-2.5 bg-slate-50 rounded-xl border border-slate-100">
+                <div className="text-[9px] font-bold uppercase tracking-wider text-slate-400 font-mono mb-1.5 flex items-center gap-1">
+                  <Wrench className="w-3 h-3 text-teal-600" /> Required Tools for Steps
+                </div>
+                <div className="flex flex-wrap gap-1.5">
+                  {part.tools.map((tool, i) => (
+                    <span key={i} className="px-2 py-0.5 bg-white text-slate-700 rounded-md text-[10px] font-medium border border-slate-200">
+                      {tool}
+                    </span>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* What is this Product & Beginner Guide (For users who know nothing) */}
             <div className="p-3.5 bg-slate-50 border border-slate-200 rounded-xl space-y-2.5">
               <div className="flex items-center justify-between">
@@ -331,73 +399,6 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
                     {part.museVisualRepair}
                   </div>
                 )}
-              </div>
-            </div>
-
-            {/* Tools */}
-            <div>
-              <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 mb-1.5 flex items-center gap-1.5">
-                <Wrench className="w-3 h-3 text-teal-600" />
-                Required Tooling & Consumables
-              </h4>
-              <div className="flex flex-wrap gap-1.5">
-                {part.tools?.map((tool, i) => (
-                  <span key={i} className="px-2.5 py-1 bg-slate-50 text-slate-700 rounded-lg text-[10px] font-medium border border-slate-200">
-                    {tool}
-                  </span>
-                ))}
-              </div>
-            </div>
-
-            {/* Repair Steps */}
-            <div>
-              <div className="flex items-center justify-between mb-1.5">
-                <h4 className="text-[10px] font-bold uppercase tracking-widest text-slate-400 flex items-center gap-1.5">
-                  <CheckSquare className="w-3 h-3 text-teal-600" />
-                  Step-by-Step Procedure ({completedCount}/{part.steps?.length || 0})
-                </h4>
-                <span className="text-[10px] font-mono text-teal-700 font-bold">{progressPct}% Complete</span>
-              </div>
-
-              {/* Progress bar */}
-              <div className="w-full h-1 bg-slate-100 rounded-full overflow-hidden mb-2">
-                <div
-                  className="h-full bg-teal-600 rounded-full transition-all duration-300"
-                  style={{ width: `${progressPct}%` }}
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                {part.steps?.map((step, idx) => {
-                  const isDone = !!completedSteps[idx];
-                  return (
-                    <div
-                      key={idx}
-                      onClick={() => {
-                        toggleStep(idx);
-                        if (onHighlightPart) onHighlightPart(part);
-                      }}
-                      onMouseEnter={() => {
-                        if (onHighlightPart) onHighlightPart(part);
-                      }}
-                      className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-start gap-2.5 text-xs ${
-                        isDone
-                          ? 'bg-emerald-50/60 border-emerald-200 text-slate-500'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50/30'
-                      }`}
-                      title="Click to check off and locate on hardware photo"
-                    >
-                      {isDone ? (
-                        <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />
-                      ) : (
-                        <Square className="w-4 h-4 text-slate-300 shrink-0 mt-0.5" />
-                      )}
-                      <span className={`leading-relaxed ${isDone ? 'line-through opacity-75' : ''}`}>
-                        <strong className="text-teal-700 mr-1.5">[{idx + 1}]</strong>{step}
-                      </span>
-                    </div>
-                  );
-                })}
               </div>
             </div>
 
