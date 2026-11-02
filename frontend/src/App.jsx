@@ -360,7 +360,7 @@ export default function App() {
     }
     if (!selectedPart) return;
 
-    const text = `FixLens diagnosis for ${selectedPart.name}. Status: ${selectedPart.statusLabel}. ${selectedPart.diagnosis}`;
+    const text = `FixLens diagnosis for ${selectedPart.name}. ${selectedPart.laymanSummary || selectedPart.diagnosis}. To fix this: ${selectedPart.laymanFixGuide || 'Follow the step-by-step repair guide.'}`;
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.rate = 1.05;
     utterance.onend = () => setIsSpeaking(false);
