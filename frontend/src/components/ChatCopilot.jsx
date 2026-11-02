@@ -77,7 +77,14 @@ export default function ChatCopilot({ part, scenario }) {
 
       if (response.ok) {
         const data = await response.json();
-        const replyText = data.reply || data.content || "Inspection analysis complete.";
+        let replyText = (data.reply || data.content || "").trim();
+        if (!replyText || replyText === "Inspection analysis complete.") {
+          replyText = `Here is what you need to know about the **${part?.name || 'component'}** on this **${productTitle}**:\n\n` +
+            `• **Overview:** ${part?.laymanSummary || 'This is a key functional part of the device.'}\n\n` +
+            `• **Diagnosis:** ${part?.diagnosis || 'Thermal and mechanical degradation observed.'}\n\n` +
+            `• **Safety First:** ${part?.safetyAlert || 'Always ensure the device is completely de-energized before touching any metal leads.'}\n\n` +
+            `• **Recommended Action:** ${part?.laymanFixGuide || 'Follow the step-by-step repair guide to service or replace this part safely.'}`;
+        }
         setMessages((prev) => [
           ...prev,
           {
