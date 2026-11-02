@@ -7,6 +7,10 @@ import {
   Crosshair,
   Maximize2,
   ArrowRight,
+  Sparkles,
+  CheckCircle2,
+  AlertTriangle,
+  Wrench
 } from 'lucide-react';
 
 export default function HardwareCanvas({
@@ -69,7 +73,7 @@ export default function HardwareCanvas({
 
     if (closestPart && minDist < 32) {
       onSelectPart(closestPart);
-    } else if (onRetargetDefect && scenario.imageType === 'custom') {
+    } else if (onRetargetDefect) {
       // Re-target defect bounding box onto user's clicked location
       onRetargetDefect({ x: xPct, y: yPct });
     }
@@ -97,8 +101,8 @@ export default function HardwareCanvas({
             SAM-3.1 OPTICAL FEED
           </div>
           <span className="hidden sm:inline text-slate-300 text-xs">|</span>
-          <span className="hidden sm:inline text-[11px] font-mono text-slate-400">
-            Physical Telemetry
+          <span className="hidden sm:inline text-[11px] font-mono text-slate-500 font-medium">
+            AI Defect Pinpoint Active
           </span>
         </div>
 
@@ -152,7 +156,7 @@ export default function HardwareCanvas({
         </div>
       </div>
 
-      {/* Main Inspection Canvas (Clean White Background with Real Photo) */}
+      {/* Main Inspection Canvas */}
       <div
         className="relative flex-1 w-full h-full flex items-center justify-center cursor-crosshair overflow-hidden p-3 sm:p-6 bg-white"
       >
@@ -196,7 +200,7 @@ export default function HardwareCanvas({
             className="w-full h-auto max-h-[580px] object-cover block select-none pointer-events-none"
           />
 
-          {/* Precision SAM 3.1 Segmentation SVG Overlay directly on top of real photo */}
+          {/* Precision SAM 3.1 Segmentation SVG Overlay */}
           <svg
             viewBox="0 0 100 100"
             className="absolute inset-0 w-full h-full pointer-events-auto"
@@ -280,6 +284,74 @@ export default function HardwareCanvas({
               );
             })}
 
+            {/* Precision Targeting Reticle Over Active Selected Defect */}
+            {selectedPart && (
+              <g className="pointer-events-none">
+                {/* Outer rotating/pulsing targeting ring */}
+                <circle
+                  cx={selectedPart.center.x}
+                  cy={selectedPart.center.y}
+                  r="4.5"
+                  fill="none"
+                  stroke={statusColor(selectedPart.status)}
+                  strokeWidth="0.4"
+                  strokeDasharray="1.5 1"
+                  className="animate-spin origin-center opacity-85"
+                  style={{
+                    transformOrigin: `${selectedPart.center.x}% ${selectedPart.center.y}%`,
+                    animationDuration: '9s'
+                  }}
+                />
+                {/* Inner alert pulse */}
+                <circle
+                  cx={selectedPart.center.x}
+                  cy={selectedPart.center.y}
+                  r="2.8"
+                  fill="none"
+                  stroke={statusColor(selectedPart.status)}
+                  strokeWidth="0.4"
+                  className="animate-ping opacity-60"
+                  style={{
+                    transformOrigin: `${selectedPart.center.x}% ${selectedPart.center.y}%`,
+                    animationDuration: '2.5s'
+                  }}
+                />
+                {/* Crosshairs */}
+                <line
+                  x1={selectedPart.center.x - 5.5}
+                  y1={selectedPart.center.y}
+                  x2={selectedPart.center.x - 2.8}
+                  y2={selectedPart.center.y}
+                  stroke={statusColor(selectedPart.status)}
+                  strokeWidth="0.4"
+                />
+                <line
+                  x1={selectedPart.center.x + 2.8}
+                  y1={selectedPart.center.y}
+                  x2={selectedPart.center.x + 5.5}
+                  y2={selectedPart.center.y}
+                  stroke={statusColor(selectedPart.status)}
+                  strokeWidth="0.4"
+                />
+                <line
+                  x1={selectedPart.center.x}
+                  y1={selectedPart.center.y - 5.5}
+                  x2={selectedPart.center.x}
+                  y2={selectedPart.center.y - 2.8}
+                  stroke={statusColor(selectedPart.status)}
+                  strokeWidth="0.4"
+                />
+                <line
+                  x1={selectedPart.center.x}
+                  y1={selectedPart.center.y + 2.8}
+                  x2={selectedPart.center.x}
+                  y2={selectedPart.center.y + 5.5}
+                  stroke={statusColor(selectedPart.status)}
+                  strokeWidth="0.4"
+                />
+              </g>
+            )}
+
             {/* Radar Scan Ping Animation on Click */}
             {pingEffect && (
               <g className="pointer-events-none">
@@ -339,39 +411,44 @@ export default function HardwareCanvas({
                 {hoveredPart.designator}
               </div>
               <div className="text-[9px] text-slate-400 mt-1 font-mono">
-                TAP TO VIEW TEARDOWN & REPAIR GUIDE
+                CLICK TO PINPOINT & SOLVE
               </div>
             </div>
           )}
         </div>
 
-        {/* Mobile Quick Action Pill */}
-        {selectedPart && onOpenGuideTab && (
-          <div className="lg:hidden absolute bottom-3 inset-x-3 z-30 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2.5 shadow-lg flex items-center justify-between gap-2.5 animate-fadeIn">
-            <div className="min-w-0">
-              <div className="flex items-center gap-1.5">
-                <span
-                  className={`w-2 h-2 rounded-full ${
-                    selectedPart.status === 'critical'
-                      ? 'bg-red-500'
-                      : selectedPart.status === 'warning'
-                      ? 'bg-amber-500'
-                      : 'bg-teal-500'
-                  }`}
-                />
-                <span className="text-[10px] font-mono text-slate-400 truncate uppercase">
-                  {selectedPart.designator.split(' - ')[0]}
-                </span>
+        {/* Live Pinpointed Defect HUD Floating Card */}
+        {selectedPart && (
+          <div className="absolute bottom-3 inset-x-3 sm:inset-x-auto sm:left-4 sm:right-4 z-30 bg-white/95 backdrop-blur-md border border-slate-200 rounded-2xl p-2.5 sm:p-3 shadow-lg flex items-center justify-between gap-3 animate-fadeIn">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <div className="w-8 h-8 rounded-xl bg-teal-50 border border-teal-200 flex items-center justify-center shrink-0">
+                <Crosshair className="w-4 h-4 text-teal-600 animate-pulse" />
               </div>
-              <div className="text-xs font-bold text-slate-900 truncate mt-0.5">{selectedPart.name}</div>
+              <div className="min-w-0">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[9px] font-mono font-bold uppercase text-teal-800 bg-teal-50 px-1.5 py-0.2 rounded border border-teal-200">
+                    PINPOINTED DEFECT
+                  </span>
+                  <span className="text-[10px] font-mono text-slate-400">
+                    X:{selectedPart.center.x}%, Y:{selectedPart.center.y}%
+                  </span>
+                </div>
+                <div className="text-xs font-bold text-slate-900 truncate mt-0.5" title={selectedPart.name}>
+                  {selectedPart.name}
+                </div>
+              </div>
             </div>
-            <button
-              onClick={onOpenGuideTab}
-              className="px-3.5 py-2 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-xs transition-transform"
-            >
-              <span>Teardown</span>
-              <ArrowRight className="w-3.5 h-3.5" />
-            </button>
+
+            {onOpenGuideTab && (
+              <button
+                onClick={onOpenGuideTab}
+                className="px-3 py-1.5 sm:px-3.5 sm:py-2 bg-teal-600 hover:bg-teal-700 active:scale-95 text-white font-bold rounded-xl text-xs flex items-center gap-1.5 shrink-0 shadow-xs transition-transform"
+                title="View step-by-step solution"
+              >
+                <span>Solve (5 Steps)</span>
+                <ArrowRight className="w-3.5 h-3.5" />
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -381,11 +458,11 @@ export default function HardwareCanvas({
         <div className="flex items-center gap-2 sm:gap-3 min-w-0">
           <span className="flex items-center gap-1.5 text-slate-700 font-mono text-[10px] sm:text-[11px] truncate">
             <Crosshair className="w-3.5 h-3.5 text-teal-600 shrink-0" />
-            Tap component or defect to inspect
+            Click anywhere on photo to pinpoint defect
           </span>
           <span className="hidden md:inline text-slate-200">|</span>
           <span className="hidden md:inline font-mono text-[11px] text-slate-400">
-            Inference: <strong className="text-teal-600">&lt;140ms</strong>
+            Realtime AI Reticle Active
           </span>
         </div>
 

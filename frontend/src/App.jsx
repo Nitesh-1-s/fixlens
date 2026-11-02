@@ -42,8 +42,8 @@ export default function App() {
     setIsSpeaking(false);
   };
 
-  // Helper to optimize image size before cloud API transmission
-  const compressImage = (rawUrl, maxDim = 1280) => {
+  // Helper to optimize image size before cloud API transmission (fast & responsive)
+  const compressImage = (rawUrl, maxDim = 1024) => {
     return new Promise((resolve) => {
       const img = new Image();
       img.onload = () => {
@@ -63,7 +63,7 @@ export default function App() {
         canvas.height = h;
         const ctx = canvas.getContext('2d');
         ctx.drawImage(img, 0, 0, w, h);
-        resolve(canvas.toDataURL('image/jpeg', 0.90));
+        resolve(canvas.toDataURL('image/jpeg', 0.84));
       };
       img.onerror = () => resolve(rawUrl);
       img.src = rawUrl;
