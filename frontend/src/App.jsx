@@ -398,75 +398,69 @@ export default function App() {
         {/* Top Info & Segment Selector Bar */}
         <div className="flex flex-col gap-2.5">
           {/* Status & Quick Actions Bar */}
-          <div className="flex items-center justify-between gap-2 px-1">
-            <div className="min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-semibold bg-teal-50 text-teal-700 border border-teal-100 shrink-0">
-                  {selectedScenario.category}
-                </span>
-                <h2 className="text-sm font-bold text-slate-900 truncate">{selectedScenario.title}</h2>
-              </div>
-              <p className="text-[11px] text-slate-400 truncate mt-0.5 hidden xs:block">{selectedScenario.description}</p>
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
+            <div className="flex items-center gap-2 flex-wrap min-w-0">
+              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-teal-50 text-teal-800 border border-teal-200 shrink-0">
+                {selectedScenario.category}
+              </span>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
+                {selectedScenario.title}
+              </h2>
             </div>
 
-            <div className="flex items-center gap-1.5 shrink-0">
+            {/* Audio Readout Button */}
+            <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
               <button
                 onClick={handleToggleVoice}
-                className={`px-2.5 py-1 rounded-lg text-xs font-medium flex items-center gap-1 transition-all border ${
+                className={`h-8 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border shadow-2xs ${
                   isSpeaking
                     ? 'bg-red-50 text-red-600 border-red-200'
-                    : 'bg-slate-50 text-slate-600 border-slate-200 hover:border-slate-300'
+                    : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300'
                 }`}
                 title="Voice Readout"
               >
-                {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5" />}
-                <span className="hidden sm:inline">{isSpeaking ? 'Stop' : 'Voice'}</span>
-              </button>
-
-              <button
-                onClick={handleNewScan}
-                className="px-2.5 py-1 text-xs font-semibold text-slate-600 hover:text-slate-900 bg-white border border-slate-200 rounded-lg shadow-2xs flex items-center gap-1"
-              >
-                <ArrowLeft className="w-3.5 h-3.5" />
-                <span className="hidden sm:inline">New Scan</span>
+                {isSpeaking ? <VolumeX className="w-3.5 h-3.5" /> : <Volume2 className="w-3.5 h-3.5 text-teal-600" />}
+                <span>{isSpeaking ? 'Stop Voice' : 'Voice Guide'}</span>
               </button>
             </div>
           </div>
 
           {/* Component Pill Carousel */}
           {selectedScenario.parts && selectedScenario.parts.length > 0 && (
-            <div className="flex items-center gap-1.5 overflow-x-auto pb-1 custom-scrollbar">
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider shrink-0 font-semibold mr-1">
+            <div className="flex items-center gap-2 overflow-x-auto py-1 px-1 custom-scrollbar">
+              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider shrink-0 font-bold mr-1">
                 Components:
               </span>
-              {selectedScenario.parts.map((p) => {
-                const isSelected = selectedPart?.id === p.id;
-                return (
-                  <button
-                    key={p.id}
-                    onClick={() => setSelectedPart(p)}
-                    className={`px-3 py-1.5 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 border shadow-2xs ${
-                      isSelected
-                        ? 'bg-teal-700 text-white border-teal-700'
-                        : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
-                    }`}
-                  >
-                    <span
-                      className={`w-2 h-2 rounded-full ${
-                        p.status === 'critical'
-                          ? 'bg-red-400'
-                          : p.status === 'warning'
-                          ? 'bg-amber-400'
-                          : 'bg-emerald-400'
+              <div className="flex items-center gap-1.5">
+                {selectedScenario.parts.map((p) => {
+                  const isSelected = selectedPart?.id === p.id;
+                  return (
+                    <button
+                      key={p.id}
+                      onClick={() => setSelectedPart(p)}
+                      className={`h-8 px-3 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 border shadow-2xs whitespace-nowrap ${
+                        isSelected
+                          ? 'bg-teal-700 text-white border-teal-700'
+                          : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                       }`}
-                    />
-                    <span>{p.designator.split(' - ')[0]}</span>
-                    <span className="opacity-75 font-normal truncate max-w-[120px] hidden sm:inline">
-                      {p.name}
-                    </span>
-                  </button>
-                );
-              })}
+                    >
+                      <span
+                        className={`w-2 h-2 rounded-full shrink-0 ${
+                          p.status === 'critical'
+                            ? 'bg-red-400'
+                            : p.status === 'warning'
+                            ? 'bg-amber-400'
+                            : 'bg-emerald-400'
+                        }`}
+                      />
+                      <span>{p.designator ? p.designator.split(' - ')[0] : 'PART'}</span>
+                      <span className="opacity-80 font-normal hidden sm:inline">
+                        {p.name ? p.name.split(' (')[0] : ''}
+                      </span>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
           )}
         </div>
