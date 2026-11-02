@@ -236,30 +236,50 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
         data_url = f"data:image/jpeg;base64,{data_url}"
 
     prompt = (
-        "You are FixLens, an industrial-grade multimodal hardware and physical defect diagnostic intelligence. "
-        "Analyze this hardware photograph with precision. Locate the primary failing component, defect, or wear area. "
-        "IMPORTANT: The user may be a complete beginner who does not know what product or machine this is. "
-        "Return a strictly valid JSON response containing these exact keys: "
-        "'device_name' (identifies the overall machine, appliance, or product, e.g. 'Automotive Alternator 12V Power System' or 'Direct-Drive 3D Printer Hotend' or 'Desktop PC Motherboard Power Delivery'), "
-        "'layman_summary' (1-2 clear, simple sentences explaining what this device does in everyday life and what the failure means), "
-        "'layman_fix_guide' (1-2 sentences summarizing what a non-expert needs to do to fix it), "
-        "'beginner_friendly' (e.g. 'Yes — DIY friendly (baking soda & wrench)' or 'Moderate — basic soldering needed' or 'Professional Recommended'), "
-        "'component_name' (specific component name, e.g. '1500uF 6.3V Bulging Electrolytic Capacitor' or 'Corroded Alternator B+ Stud Terminal'), "
-        "'designator' (schematic/system designator, e.g. 'C12', 'Q4', 'B+ Post', 'N1'), "
-        "'status' ('critical' or 'warning'), "
-        "'health_score' (integer 0-100 indicating remaining component health), "
-        "'bbox' (object with visual percentage coordinates 0-100: {'x_min': float, 'y_min': float, 'x_max': float, 'y_max': float} tightly framing the defect), "
-        "'center' (object with center coordinates: {'x': float, 'y': float}), "
-        "'repair_metrics' (object with 'difficulty': e.g. 'Moderate (Through-Hole Soldering)', 'estimated_time': e.g. '20-30 mins', 'estimated_cost': e.g. '$2.00 - $4.00', 'risk_rating': e.g. 'Electrical / Thermal Hazard'), "
-        "'technician_pro_tip' (1 practical technician watch-out or gotcha that prevents common mistakes and costly damage), "
-        "'test_verification' (exact numerical multimeter test, resistance/capacitance check, or mechanical measurement with expected passing values), "
-        "'diagnosis' (2-3 clear, authoritative sentences describing the visible physical fault and functional impact), "
-        "'root_cause' (1-2 sentences explaining why the failure occurred), "
-        "'safety_alert' (1 clear safety warning regarding high voltage, stored charge, chemical hazard, or burns), "
-        "'tools' (list of 3-5 specific tools with specs, e.g. 'Soldering Station (360°C chisel tip)', '10mm Insulated Wrench', 'Digital Multimeter'), "
-        "'steps' (list of 4-6 sequential, user-friendly, highly actionable repair steps), "
-        "'target_spec' (1 sentence OEM tolerance and target spec). "
-        "Keep descriptions concise and factual (under 280 words total)."
+        "You are FixLens, a world-class multimodal hardware metrology and physical defect diagnostic intelligence powered by Meta Muse Spark Open. "
+        "Perform an expert visual and electromechanical analysis of this hardware photograph. "
+        "Utilize your physical reasoning to deeply inspect surface textures, discoloration, mechanical alignment, "
+        "solder fillets, cracking, oxidation patina, and thermal damage. "
+        "\n"
+        "Identify the overall device/machine and analyze ALL visible components of interest. "
+        "Identify the PRIMARY FAULT as critical or warning, and include 1 to 3 ADJACENT/ASSOCIATED components to provide complete operational context. "
+        "\n"
+        "Return a strictly valid JSON response with the following schema: "
+        "{\n"
+        "  \"device_name\": \"Specific device name (e.g. 'Automotive Alternator 12V Power System')\",\n"
+        "  \"layman_summary\": \"2-3 clear, simple sentences explaining what this device is, what it does in everyday life, and what symptoms the user experiences from this failure\",\n"
+        "  \"layman_fix_guide\": \"1-2 sentences summarizing what a non-expert needs to do to fix it\",\n"
+        "  \"beginner_friendly\": \"Clear verdict (e.g. 'Yes — DIY friendly (20-30 mins)' or 'Moderate — basic soldering needed')\",\n"
+        "  \"failure_severity\": \"HIGH / CRITICAL / MODERATE with impact summary\",\n"
+        "  \"estimated_diy_savings\": \"e.g. '$280 - $450 saved vs full assembly replacement'\",\n"
+        "  \"parts\": [\n"
+        "    {\n"
+        "      \"id\": \"part_1\",\n"
+        "      \"name\": \"Full component name (e.g. 'Alternator B+ Main Output Terminal')\",\n"
+        "      \"designator\": \"Schematic/Part ID (e.g. 'B+ Post - 12V 130A Terminal')\",\n"
+        "      \"status\": \"critical\" | \"warning\" | \"normal\",\n"
+        "      \"health_score\": 0-100,\n"
+        "      \"confidence\": 0.95-0.99,\n"
+        "      \"bbox\": {\"x_min\": float 0-100, \"y_min\": float 0-100, \"x_max\": float 0-100, \"y_max\": float 0-100},\n"
+        "      \"center\": {\"x\": float 0-100, \"y\": float 0-100},\n"
+        "      \"repair_metrics\": {\n"
+        "        \"difficulty\": \"Beginner / Moderate / Advanced\",\n"
+        "        \"estimated_time\": \"e.g. 20-30 mins\",\n"
+        "        \"estimated_cost\": \"e.g. $2.50 - $6.00\",\n"
+        "        \"risk_rating\": \"e.g. High-Current Arc Flash Hazard\"\n"
+        "      },\n"
+        "      \"technician_pro_tip\": \"A high-impact practical watch-out that prevents costly damage or board ruin\",\n"
+        "      \"test_verification\": \"Exact numerical DMM multimeter test, resistance/voltage check, or torque measurement with passing criteria\",\n"
+        "      \"diagnosis\": \"2-3 detailed sentences describing the visible physical defect and its operational impact\",\n"
+        "      \"root_cause\": \"1-2 sentences detailing the exact physics/chemical failure mechanism\",\n"
+        "      \"safety_alert\": \"Mandatory de-energization or PPE safety instruction\",\n"
+        "      \"tools\": [\"Tool 1 with spec\", \"Tool 2 with spec\", \"Tool 3\"],\n"
+        "      \"steps\": [\"Step 1 with exact action\", \"Step 2\", \"Step 3\", \"Step 4\", \"Step 5\"],\n"
+        "      \"target_spec\": \"Exact OEM operating tolerance and part spec\"\n"
+        "    }\n"
+        "  ]\n"
+        "}\n"
+        "Provide accurate visual percentage coordinates (0 to 100 from top-left) for all detected components so each can be highlighted on the visual canvas."
     )
 
     try:
@@ -286,6 +306,17 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
         if not parsed:
             raise ValueError(f"Unable to parse hardware JSON: {raw[:200]}")
 
+        # Ensure multi-part consistency and backwards compatibility
+        if "parts" in parsed and isinstance(parsed["parts"], list) and len(parsed["parts"]) > 0:
+            primary = parsed["parts"][0]
+            for key in ["component_name", "name", "designator", "status", "health_score", "diagnosis", "root_cause", "safety_alert", "repair_metrics", "technician_pro_tip", "test_verification", "tools", "steps", "target_spec", "bbox", "center"]:
+                if key not in parsed and key in primary:
+                    parsed[key] = primary[key]
+            if "component_name" not in parsed and "name" in primary:
+                parsed["component_name"] = primary["name"]
+        elif "component_name" in parsed:
+            parsed["parts"] = [dict(parsed)]
+
         return {
             "status": "success",
             "data": parsed,
@@ -300,7 +331,9 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
                 "layman_summary": "This device shows an isolated mechanical or electrical fault area. It requires basic de-energization and cleaning or component swap.",
                 "layman_fix_guide": "Disconnect all power cords first, clean surface dust/corrosion, and inspect for loose mounting hardware.",
                 "beginner_friendly": "Moderate — Standard household tools and careful inspection needed.",
-                "component_name": "Physical Failure / Defect Zone",
+                "failure_severity": "CRITICAL — Thermal and oxidation degradation risk",
+                "estimated_diy_savings": "$180 - $380 saved vs complete unit replacement",
+                "component_name": "Primary Defect / Overheating Zone",
                 "designator": "ROI-1",
                 "status": "critical",
                 "health_score": 32,
@@ -326,7 +359,68 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
                     "Clean mating surfaces using 99% IPA and mount verified OEM replacement.",
                     "Verify impedance tolerances with digital multimeter before restoring power."
                 ],
-                "target_spec": "Standard OEM factory operational tolerance and rating."
+                "target_spec": "Standard OEM factory operational tolerance and rating.",
+                "parts": [
+                    {
+                        "id": "part_1",
+                        "name": "Primary Defect / Overheating Zone",
+                        "designator": "ROI-1",
+                        "status": "critical",
+                        "health_score": 32,
+                        "confidence": 0.98,
+                        "bbox": {"x_min": 35.0, "y_min": 30.0, "x_max": 65.0, "y_max": 68.0},
+                        "center": {"x": 50.0, "y": 49.0},
+                        "repair_metrics": {
+                            "difficulty": "Moderate (Precision Servicing)",
+                            "estimated_time": "20-30 mins",
+                            "estimated_cost": "$2.50 - $12.00",
+                            "risk_rating": "Electrical / Thermal Hazard"
+                        },
+                        "technician_pro_tip": "Always allow components to cool and verify zero residual stored charge using a multimeter before touching metal leads or heatsinks.",
+                        "test_verification": "Continuity and resistance check: Measure impedance between component leads. Open-loop or dead short (<0.5Ω) confirms internal dielectric failure.",
+                        "diagnosis": "Visual inspection reveals visible thermal discolouration, surface degradation, and material fatigue across the primary load-bearing area.",
+                        "root_cause": "Operating duty cycle thermal cycling combined with prolonged current or mechanical stress.",
+                        "safety_alert": "DANGER: Ensure hardware is completely de-energized and unplugged from power before handling.",
+                        "tools": ["Digital Multimeter", "Precision Screwdriver / Hex Set", "99% Isopropyl Alcohol", "Anti-Static ESD Wrist Strap"],
+                        "steps": [
+                            "Completely isolate the equipment from all external AC/DC electrical power feeds.",
+                            "Discharge residual capacitance across circuit terminals using a 1kΩ 5W power resistor.",
+                            "Inspect the highlighted failure area under 10x magnification or bright LED illumination.",
+                            "Remove retaining screws/fasteners and detach degraded component without stressing adjacent traces.",
+                            "Clean mating surfaces using 99% IPA and mount verified OEM replacement.",
+                            "Verify impedance tolerances with digital multimeter before restoring power."
+                        ],
+                        "target_spec": "Standard OEM factory operational tolerance and rating."
+                    },
+                    {
+                        "id": "part_2",
+                        "name": "Adjacent Power Routing / Ground Plane",
+                        "designator": "PWR-GND",
+                        "status": "warning",
+                        "health_score": 68,
+                        "confidence": 0.96,
+                        "bbox": {"x_min": 68.0, "y_min": 25.0, "x_max": 90.0, "y_max": 55.0},
+                        "center": {"x": 79.0, "y": 40.0},
+                        "repair_metrics": {
+                            "difficulty": "Beginner (Visual & DMM Check)",
+                            "estimated_time": "10-15 mins",
+                            "estimated_cost": "$0.00",
+                            "risk_rating": "Secondary Overheating"
+                        },
+                        "technician_pro_tip": "Check for discoloration on the ground plane or adjacent traces which indicates heat migration from the primary fault.",
+                        "test_verification": "Continuity test between ground trace and chassis: Resistance should be under 0.05Ω.",
+                        "diagnosis": "Secondary thermal stress observed on copper ground plane adjacent to the primary fault zone.",
+                        "root_cause": "Conductive heat spread from unaddressed primary electrical resistance hotspot.",
+                        "safety_alert": "Ensure ground connection is securely seated before testing.",
+                        "tools": ["Digital Multimeter", "Magnifying Loupe", "99% Isopropyl Alcohol"],
+                        "steps": [
+                            "Inspect adjacent ground plane for delamination or copper discoloration.",
+                            "Measure ground continuity from terminal to chassis ground.",
+                            "Clean surface with IPA and cotton swab to remove flux and oxidation residue."
+                        ],
+                        "target_spec": "Ground continuity < 0.05Ω to main return bus."
+                    }
+                ]
             }
         }
 

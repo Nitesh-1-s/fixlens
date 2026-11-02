@@ -148,88 +148,122 @@ export default function App() {
         const res = await resp.json();
         if (res.data) {
           const ai = res.data;
-
-          // Compute accurate bounding box coordinates (0-100%)
-          const rawBbox = ai.bbox || {};
-          let xMin = Number(rawBbox.x_min);
-          let yMin = Number(rawBbox.y_min);
-          let xMax = Number(rawBbox.x_max);
-          let yMax = Number(rawBbox.y_max);
-
-          // If bbox missing or inverted, calculate natural bounding area from center
-          if (isNaN(xMin) || isNaN(yMin) || isNaN(xMax) || isNaN(yMax) || xMax <= xMin || yMax <= yMin) {
-            const rawCenter = ai.center || {};
-            const cX = Number(rawCenter.x) || 50;
-            const cY = Number(rawCenter.y) || 50;
-            xMin = Math.max(5, cX - 14);
-            xMax = Math.min(95, cX + 14);
-            yMin = Math.max(5, cY - 14);
-            yMax = Math.min(95, cY + 14);
-          }
-
-          // Bound clamp
-          xMin = Math.max(2, Math.min(88, xMin));
-          yMin = Math.max(2, Math.min(88, yMin));
-          xMax = Math.max(xMin + 6, Math.min(98, xMax));
-          yMax = Math.max(yMin + 6, Math.min(98, yMax));
-
-          const centerX = ai.center?.x && !isNaN(Number(ai.center.x))
-            ? Math.max(5, Math.min(95, Number(ai.center.x)))
-            : Math.round((xMin + xMax) / 2);
-          const centerY = ai.center?.y && !isNaN(Number(ai.center.y))
-            ? Math.max(5, Math.min(95, Number(ai.center.y)))
-            : Math.round((yMin + yMax) / 2);
-
-          const accuratePolygon = [
-            { x: Math.round(xMin), y: Math.round(yMin) },
-            { x: Math.round(xMax), y: Math.round(yMin) },
-            { x: Math.round(xMax), y: Math.round(yMax) },
-            { x: Math.round(xMin), y: Math.round(yMax) }
-          ];
-
           const identifiedDevice = ai.device_name || 'Hardware Assembly';
-          const updatedPart = {
-            ...initialPart,
-            name: ai.component_name || 'Detected Hardware Failure',
-            designator: `${ai.designator || 'FAULT-1'} - ${(ai.status || 'CRITICAL').toUpperCase()}`,
-            deviceName: identifiedDevice,
-            laymanSummary: ai.layman_summary || 'Physical defect detected on device. Refer to the step-by-step beginner guide below to safely repair it.',
-            laymanFixGuide: ai.layman_fix_guide || 'De-energize device completely, clean the defect area, and replace or service the highlighted part.',
-            beginnerFriendly: ai.beginner_friendly || 'Moderate — Standard DIY precautions and basic tools required.',
-            center: { x: centerX, y: centerY },
-            polygon: accuratePolygon,
-            status: ai.status || 'critical',
-            statusLabel: `${(ai.status || 'critical').toUpperCase()}: Detected Failure`,
-            healthScore: typeof ai.health_score === 'number' ? ai.health_score : 25,
-            confidence: 0.985,
-            repairMetrics: ai.repair_metrics || {
-              difficulty: 'Moderate (Precision Servicing)',
-              estTime: '20-30 mins',
-              estCost: '$2.50 - $8.00',
-              riskRating: 'Electrical / Thermal Hazard'
-            },
-            technicianProTip: ai.technician_pro_tip || 'Verify complete power isolation with a digital multimeter before contacting conductive surfaces.',
-            testVerification: ai.test_verification || 'Measure circuit continuity and impedance against factory schematics.',
-            diagnosis: typeof ai.diagnosis === 'string' ? ai.diagnosis : JSON.stringify(ai.diagnosis),
-            rootCause: ai.root_cause || 'Thermal and mechanical operational fatigue.',
-            safetyAlert: ai.safety_alert || 'Ensure unit is de-energized before handling.',
-            tools: Array.isArray(ai.tools) ? ai.tools : ['Digital Multimeter', 'Precision Screwdrivers', 'Cleaning Solvent'],
-            steps: Array.isArray(ai.steps) ? ai.steps : ['Power down device', 'Inspect defect area', 'Replace worn part'],
-            targetSpec: ai.target_spec || 'Standard OEM operational tolerance.',
-            reasoningTrace: res.reasoning
-          };
+          const failureSeverity = ai.failure_severity || 'CRITICAL — Physical Defect';
+          const diySavings = ai.estimated_diy_savings || '$150 - $350 saved vs replacement';
+
+          const rawParts = Array.isArray(ai.parts) && ai.parts.length > 0
+            ? ai.parts
+            : [{
+                id: 'part_1',
+                name: ai.component_name || 'Detected Hardware Failure',
+                designator: ai.designator || 'FAULT-1',
+                status: ai.status || 'critical',
+                health_score: ai.health_score || 25,
+                confidence: 0.985,
+                bbox: ai.bbox,
+                center: ai.center,
+                repair_metrics: ai.repair_metrics,
+                technician_pro_tip: ai.technician_pro_tip,
+                test_verification: ai.test_verification,
+                diagnosis: ai.diagnosis,
+                root_cause: ai.root_cause,
+                safety_alert: ai.safety_alert,
+                tools: ai.tools,
+                steps: ai.steps,
+                target_spec: ai.target_spec
+              }];
+
+          const processedParts = rawParts.map((p, idx) => {
+            const rawBbox = p.bbox || {};
+            let xMin = Number(rawBbox.x_min);
+            let yMin = Number(rawBbox.y_min);
+            let xMax = Number(rawBbox.x_max);
+            let yMax = Number(rawBbox.y_max);
+
+            if (isNaN(xMin) || isNaN(yMin) || isNaN(xMax) || isNaN(yMax) || xMax <= xMin || yMax <= yMin) {
+              const rawCenter = p.center || {};
+              const cX = Number(rawCenter.x) || (30 + idx * 25);
+              const cY = Number(rawCenter.y) || (30 + idx * 20);
+              xMin = Math.max(5, cX - 12);
+              xMax = Math.min(95, cX + 12);
+              yMin = Math.max(5, cY - 12);
+              yMax = Math.min(95, cY + 12);
+            }
+
+            // Bound clamp
+            xMin = Math.max(2, Math.min(88, xMin));
+            yMin = Math.max(2, Math.min(88, yMin));
+            xMax = Math.max(xMin + 5, Math.min(98, xMax));
+            yMax = Math.max(yMin + 5, Math.min(98, yMax));
+
+            const centerX = p.center?.x && !isNaN(Number(p.center.x))
+              ? Math.max(5, Math.min(95, Number(p.center.x)))
+              : Math.round((xMin + xMax) / 2);
+            const centerY = p.center?.y && !isNaN(Number(p.center.y))
+              ? Math.max(5, Math.min(95, Number(p.center.y)))
+              : Math.round((yMin + yMax) / 2);
+
+            const accuratePolygon = [
+              { x: Math.round(xMin), y: Math.round(yMin) },
+              { x: Math.round(xMax), y: Math.round(yMin) },
+              { x: Math.round(xMax), y: Math.round(yMax) },
+              { x: Math.round(xMin), y: Math.round(yMax) }
+            ];
+
+            const partStatus = p.status || (idx === 0 ? 'critical' : 'warning');
+            const partName = p.name || (idx === 0 ? (ai.component_name || 'Detected Hardware Failure') : `Associated Component ${idx + 1}`);
+            const partDesignator = p.designator || (idx === 0 ? (ai.designator || 'FAULT-1') : `ROI-${idx + 1}`);
+
+            return {
+              id: p.id || `part_${idx + 1}`,
+              name: partName,
+              designator: `${partDesignator} - ${partStatus.toUpperCase()}`,
+              deviceName: identifiedDevice,
+              laymanSummary: ai.layman_summary || 'Physical defect detected on device. Refer to the step-by-step beginner guide below to safely repair it.',
+              laymanFixGuide: ai.layman_fix_guide || 'De-energize device completely, clean the defect area, and replace or service the highlighted part.',
+              beginnerFriendly: ai.beginner_friendly || 'Moderate — Standard DIY precautions and basic tools required.',
+              failureSeverity: failureSeverity,
+              diySavings: diySavings,
+              center: { x: centerX, y: centerY },
+              polygon: accuratePolygon,
+              status: partStatus,
+              statusLabel: `${partStatus.toUpperCase()}: ${partName}`,
+              healthScore: typeof p.health_score === 'number' ? p.health_score : (partStatus === 'critical' ? 25 : 65),
+              confidence: typeof p.confidence === 'number' ? p.confidence : 0.985,
+              repairMetrics: p.repair_metrics || {
+                difficulty: partStatus === 'critical' ? 'Moderate (Precision Servicing)' : 'Standard Inspection',
+                estTime: '20-30 mins',
+                estCost: '$2.50 - $8.00',
+                riskRating: 'Electrical / Thermal Hazard'
+              },
+              technicianProTip: p.technician_pro_tip || ai.technician_pro_tip || 'Verify complete power isolation with a digital multimeter before contacting conductive surfaces.',
+              testVerification: p.test_verification || ai.test_verification || 'Measure circuit continuity and impedance against factory schematics.',
+              diagnosis: typeof p.diagnosis === 'string' ? p.diagnosis : (p.diagnosis ? JSON.stringify(p.diagnosis) : (ai.diagnosis || 'Component inspection complete.')),
+              rootCause: p.root_cause || ai.root_cause || 'Thermal and mechanical operational fatigue.',
+              safetyAlert: p.safety_alert || ai.safety_alert || 'Ensure unit is de-energized before handling.',
+              tools: Array.isArray(p.tools) ? p.tools : (Array.isArray(ai.tools) ? ai.tools : ['Digital Multimeter', 'Precision Screwdrivers', 'Cleaning Solvent']),
+              steps: Array.isArray(p.steps) ? p.steps : (Array.isArray(ai.steps) ? ai.steps : ['Power down device', 'Inspect defect area', 'Replace worn part']),
+              targetSpec: p.target_spec || ai.target_spec || 'Standard OEM operational tolerance.',
+              reasoningTrace: res.reasoning
+            };
+          });
+
+          const primaryPart = processedParts.find(p => p.status === 'critical') || processedParts[0];
 
           const finalScenario = {
             ...newScenario,
             title: identifiedDevice.toUpperCase(),
             subtitle: ai.layman_summary || 'Multimodal AI Vision Defect Inspection',
-            description: `Automated fault detection complete. Identified: ${identifiedDevice} · Defect: ${ai.component_name || 'Hardware Failure'}.`,
-            parts: [updatedPart]
+            description: `Automated fault detection complete. Identified: ${identifiedDevice} · Primary Defect: ${primaryPart.name}.`,
+            failureSeverity: failureSeverity,
+            diySavings: diySavings,
+            parts: processedParts
           };
 
           setScenarios((prev) => [finalScenario, ...prev.filter((s) => s.id !== newScenario.id)]);
           setSelectedScenario(finalScenario);
-          setSelectedPart(updatedPart);
+          setSelectedPart(primaryPart);
         }
       }
     } catch (err) {

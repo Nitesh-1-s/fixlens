@@ -188,6 +188,28 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
               </div>
             </div>
 
+            {/* Severity Assessment & Estimated DIY Savings Banner */}
+            {(part.failureSeverity || scenario?.failureSeverity || part.diySavings || scenario?.diySavings) && (
+              <div className="p-3 bg-gradient-to-r from-teal-50/90 via-emerald-50/50 to-slate-50 border border-teal-200/90 rounded-xl flex items-center justify-between gap-3 shadow-2xs">
+                <div className="flex items-center gap-2.5 min-w-0">
+                  <div className="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse shrink-0"></div>
+                  <div className="min-w-0">
+                    <div className="text-[9px] font-mono text-slate-400 uppercase font-bold tracking-wider">Severity Rating</div>
+                    <div className="text-xs font-bold text-slate-900 truncate" title={part.failureSeverity || scenario?.failureSeverity}>
+                      {part.failureSeverity || scenario?.failureSeverity || 'CRITICAL'}
+                    </div>
+                  </div>
+                </div>
+
+                {(part.diySavings || scenario?.diySavings) && (
+                  <div className="text-right shrink-0 bg-white/80 px-2.5 py-1 rounded-lg border border-emerald-200">
+                    <div className="text-[9px] font-mono text-emerald-700 uppercase font-bold">💰 Est. DIY Savings</div>
+                    <div className="text-xs font-bold text-emerald-900">{part.diySavings || scenario?.diySavings}</div>
+                  </div>
+                )}
+              </div>
+            )}
+
             {/* Industrial Repair Metrics Bar */}
             <div className="grid grid-cols-2 gap-2 bg-slate-50/70 p-3 rounded-xl border border-slate-200">
               <div className="p-2 bg-white rounded-lg border border-slate-100 flex flex-col">
@@ -384,7 +406,7 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
                     Meta Muse Spark Reasoning Trace
                   </span>
                   <span className="text-[10px] font-mono text-teal-700 flex items-center gap-1 font-semibold">
-                    {showReasoning ? 'Hide CoT' : 'View Chain-of-Thought'}
+                    {showReasoning ? 'Hide CoT' : `View Chain-of-Thought (${(part.reasoningTrace?.length || 0).toLocaleString()} chars)`}
                     <ChevronDown className={`w-3.5 h-3.5 transition-transform duration-200 ${showReasoning ? 'rotate-180' : ''}`} />
                   </span>
                 </button>
