@@ -121,7 +121,7 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
-            <span>Ask AI Copilot</span>
+            <span>Ask Gemini AI</span>
           </button>
         </div>
       </div>
@@ -189,7 +189,7 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
                 className="w-full py-2 px-3 bg-white hover:bg-teal-50 border border-teal-200 rounded-lg text-xs font-semibold text-teal-800 flex items-center justify-center gap-2 transition-colors shadow-2xs"
               >
                 <Sparkles className="w-3.5 h-3.5 text-teal-600" />
-                <span>Ask AI Copilot How to Solve This in Simple Words</span>
+                <span>Ask Gemini AI How to Solve This in Simple Words</span>
                 <ArrowRight className="w-3 h-3 text-teal-600" />
               </button>
             </div>

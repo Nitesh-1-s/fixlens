@@ -23,9 +23,9 @@ export default function MobileBottomNav({
     },
     {
       id: 'chat',
-      label: 'AI Copilot',
+      label: 'Gemini AI',
       icon: MessageSquare,
-      badge: 'Spark'
+      badge: 'AI'
     }
   ];
 

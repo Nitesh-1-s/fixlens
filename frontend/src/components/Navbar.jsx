@@ -28,7 +28,7 @@ export default function Navbar({
                 FixLens
               </h1>
               <p className="text-[9px] sm:text-[10px] text-slate-400 font-medium tracking-wide uppercase hidden sm:block">
-                Hardware Diagnostic Copilot
+                Hardware Diagnostic Intelligence
               </p>
             </div>
           </button>

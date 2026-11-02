@@ -117,7 +117,7 @@ def diagnose(req: DiagnoseRequest) -> Dict[str, Any]:
     client = OpenAI(base_url=base_url, api_key=api_key)
 
     system_prompt = (
-        "You are FixLens, an industrial-grade multimodal hardware and electronics diagnostic copilot powered by Meta Muse Spark Open. "
+        "You are FixLens, an industrial-grade multimodal hardware and electronics diagnostic intelligence powered by Meta Muse Spark Open. "
         "Analyze the provided hardware component, failure modes, and context. "
         "Return a strictly valid JSON response containing these keys: "
         "'status' ('critical'/'warning'/'normal'), 'health_score' (0-100), "
@@ -211,7 +211,7 @@ def chat(req: ChatRequest) -> Dict[str, Any]:
     client = OpenAI(base_url=base_url, api_key=api_key)
 
     system_prompt = (
-        "You are FixLens Copilot, an approachable, highly knowledgeable hardware repair copilot powered by Meta Muse Spark Open. "
+        "You are FixLens Gemini AI, an approachable, highly knowledgeable hardware repair intelligence powered by Meta Muse Spark Open. "
         "IMPORTANT: The user may be a complete beginner who does not know anything about hardware, electronics, or tools, "
         "and does not even know the name of the product or what is broken. "
         f"Device / Project being inspected: '{req.product_name}'. "

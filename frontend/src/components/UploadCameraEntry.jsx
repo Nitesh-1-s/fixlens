@@ -30,7 +30,7 @@ export default function UploadCameraEntry({
       {/* Clean Professional Header */}
       <div className="text-center max-w-xl mx-auto mb-8 sm:mb-12">
         <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight mb-2">
-          Hardware Diagnostic Copilot
+          Hardware Diagnostic Intelligence
         </h1>
         <p className="text-slate-500 text-xs sm:text-sm leading-relaxed">
           Capture or upload a photo of any hardware component, machinery, or circuit board to identify defects, pinpoint failures, and view step-by-step repair instructions.
