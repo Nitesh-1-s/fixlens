@@ -3,7 +3,7 @@ import {
   AlertTriangle, CheckCircle2, ShieldAlert, Wrench, Sparkles,
   Layers, Activity, ArrowRight, Download, Share2, CheckSquare, Square,
   Cpu, ChevronDown, MessageSquare, Clock, DollarSign, Zap, Gauge, Check,
-  HelpCircle, BookOpen, Info, ShieldCheck, CheckCheck
+  HelpCircle, BookOpen, Info, ShieldCheck, CheckCheck, Crosshair
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import ChatCopilot from './ChatCopilot';

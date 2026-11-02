@@ -8,6 +8,7 @@ import GuideModal from './components/GuideModal';
 import CameraModal from './components/CameraModal';
 import UploadCameraEntry from './components/UploadCameraEntry';
 import MobileBottomNav from './components/MobileBottomNav';
+import ErrorBoundary from './components/ErrorBoundary';
 import { PRESET_SCENARIOS } from './data/presets';
 import { Volume2, VolumeX, ArrowLeft } from 'lucide-react';
 
@@ -475,13 +476,15 @@ export default function App() {
             onRetargetDefect={handleRetargetDefect}
             clickPoint={lastClickPoint}
           />
-          <DiagnosticSidebar
-            part={selectedPart}
-            scenario={selectedScenario}
-            onExportReport={(part) => setWorkOrderPart(part)}
-            isLiveInferencing={isLiveInferencing}
-            onHighlightPart={(p) => setLastClickPoint({ x: p.center.x, y: p.center.y, id: Date.now() })}
-          />
+          <ErrorBoundary>
+            <DiagnosticSidebar
+              part={selectedPart}
+              scenario={selectedScenario}
+              onExportReport={(part) => setWorkOrderPart(part)}
+              isLiveInferencing={isLiveInferencing}
+              onHighlightPart={(p) => setLastClickPoint({ x: p.center.x, y: p.center.y, id: Date.now() })}
+            />
+          </ErrorBoundary>
         </div>
 
         {/* Mobile View (Tabbed Navigation View on Screens < 1024px) */}
@@ -502,13 +505,15 @@ export default function App() {
 
           {mobileTab === 'guide' && (
             <div className="animate-fadeIn">
-              <DiagnosticSidebar
-                part={selectedPart}
-                scenario={selectedScenario}
-                onExportReport={(part) => setWorkOrderPart(part)}
-                isLiveInferencing={isLiveInferencing}
-                onHighlightPart={(p) => setLastClickPoint({ x: p.center.x, y: p.center.y, id: Date.now() })}
-              />
+              <ErrorBoundary>
+                <DiagnosticSidebar
+                  part={selectedPart}
+                  scenario={selectedScenario}
+                  onExportReport={(part) => setWorkOrderPart(part)}
+                  isLiveInferencing={isLiveInferencing}
+                  onHighlightPart={(p) => setLastClickPoint({ x: p.center.x, y: p.center.y, id: Date.now() })}
+                />
+              </ErrorBoundary>
             </div>
           )}
 
