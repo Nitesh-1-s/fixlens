@@ -8,7 +8,7 @@ import {
 import confetti from 'canvas-confetti';
 import ChatCopilot from './ChatCopilot';
 
-export default function DiagnosticSidebar({ part, scenario, onExportReport, isLiveInferencing }) {
+export default function DiagnosticSidebar({ part, scenario, onExportReport, isLiveInferencing, onHighlightPart }) {
   const [completedSteps, setCompletedSteps] = useState({});
   const [showTarget, setShowTarget] = useState(false);
   const [showReasoning, setShowReasoning] = useState(false);
@@ -373,12 +373,19 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
                   return (
                     <div
                       key={idx}
-                      onClick={() => toggleStep(idx)}
+                      onClick={() => {
+                        toggleStep(idx);
+                        if (onHighlightPart) onHighlightPart(part);
+                      }}
+                      onMouseEnter={() => {
+                        if (onHighlightPart) onHighlightPart(part);
+                      }}
                       className={`p-2.5 rounded-xl border transition-all cursor-pointer flex items-start gap-2.5 text-xs ${
                         isDone
                           ? 'bg-emerald-50/60 border-emerald-200 text-slate-500'
-                          : 'bg-white border-slate-200 text-slate-700 hover:border-slate-300 hover:bg-slate-50'
+                          : 'bg-white border-slate-200 text-slate-700 hover:border-teal-300 hover:bg-teal-50/30'
                       }`}
+                      title="Click to check off and locate on hardware photo"
                     >
                       {isDone ? (
                         <CheckCircle2 className="w-4 h-4 text-emerald-600 shrink-0 mt-0.5" />

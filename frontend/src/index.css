@@ -45,3 +45,33 @@ body {
 .animate-spin-slow {
   animation: spin-slow 12s linear infinite;
 }
+
+/* Enterprise Work Order Print Stylesheet */
+@media print {
+  body * {
+    visibility: hidden;
+  }
+  .work-order-print-container,
+  .work-order-print-container * {
+    visibility: visible;
+  }
+  .work-order-print-container {
+    position: absolute !important;
+    left: 0 !important;
+    top: 0 !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    height: auto !important;
+    max-height: none !important;
+    margin: 0 !important;
+    padding: 24px !important;
+    border: none !important;
+    box-shadow: none !important;
+    background: #ffffff !important;
+    color: #0f172a !important;
+    overflow: visible !important;
+  }
+  .no-print {
+    display: none !important;
+  }
+}

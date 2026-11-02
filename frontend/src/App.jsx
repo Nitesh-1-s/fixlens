@@ -448,6 +448,7 @@ export default function App() {
               scenario={selectedScenario}
               onExportReport={(part) => setWorkOrderPart(part)}
               isLiveInferencing={isLiveInferencing}
+              onHighlightPart={(p) => setLastClickPoint({ x: p.center.x, y: p.center.y, id: Date.now() })}
             />
           </div>
         )}
@@ -477,6 +478,7 @@ export default function App() {
                   scenario={selectedScenario}
                   onExportReport={(part) => setWorkOrderPart(part)}
                   isLiveInferencing={isLiveInferencing}
+                  onHighlightPart={(p) => setLastClickPoint({ x: p.center.x, y: p.center.y, id: Date.now() })}
                 />
               </div>
             )}

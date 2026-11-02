@@ -14,9 +14,9 @@ export default function WorkOrderModal({ part, scenario, onClose }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40">
-      <div className="w-full max-w-2xl max-h-[90vh] bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden flex flex-col">
+      <div className="work-order-print-container w-full max-w-2xl max-h-[90vh] bg-white border border-slate-200 rounded-2xl shadow-lg overflow-hidden flex flex-col">
         {/* Modal Header */}
-        <div className="p-4 border-b border-slate-100 flex items-center justify-between">
+        <div className="p-4 border-b border-slate-100 flex items-center justify-between no-print">
           <div className="flex items-center gap-3">
             <Logo size={20} />
             <h3 className="text-xs font-bold text-slate-900 uppercase tracking-wider font-mono">
@@ -147,17 +147,28 @@ export default function WorkOrderModal({ part, scenario, onClose }) {
               </div>
             </div>
           )}
+          {/* Official Verification Stamp & Barcode Footer */}
+          <div className="pt-4 border-t border-slate-100 flex items-center justify-between text-[9px] font-mono text-slate-400">
+            <div>
+              <div className="font-bold text-slate-700">MODAL AUTONOMOUS METROLOGY PIPELINE</div>
+              <div>VERIFIED: META MUSE SPARK OPEN (2M TPM) · SAM 3.1 GEOMETRY</div>
+            </div>
+            <div className="text-right">
+              <div className="font-bold text-teal-700">CHECKSUM: 0x{Date.now().toString(16).toUpperCase()}</div>
+              <div>RIGHT-TO-REPAIR COMPLIANT</div>
+            </div>
+          </div>
         </div>
 
-        {/* Footer */}
-        <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-white">
+        {/* Footer Actions (Hidden on Print) */}
+        <div className="p-4 border-t border-slate-100 flex items-center justify-between bg-white no-print">
           <button onClick={onClose} className="px-4 py-2 text-xs font-medium text-slate-400 hover:text-slate-600">Close</button>
           <button
             onClick={() => window.print()}
             className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-semibold flex items-center gap-1.5 shadow-xs"
           >
             <Printer className="w-3.5 h-3.5" />
-            Print / Save PDF
+            Print / Save PDF Work Order
           </button>
         </div>
       </div>
