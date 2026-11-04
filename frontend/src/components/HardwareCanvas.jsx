@@ -206,12 +206,22 @@ export default function HardwareCanvas({
             className="absolute inset-0 w-full h-full pointer-events-auto"
             preserveAspectRatio="none"
           >
-            {/* SAM 3.1 Segmentation Masks */}
+            {/* SAM 3.1 Precision Segmentation Overlays */}
             {scenario.parts.map((part) => {
               const isSelected = selectedPart?.id === part.id;
               const isHovered = hoveredPart?.id === part.id;
               const color = statusColor(part.status);
               const pointsStr = part.polygon.map((p) => `${p.x},${p.y}`).join(' ');
+
+              // Calculate bounding box for smart floating label placement above the component
+              const minY = Math.min(...part.polygon.map((p) => p.y));
+              const minX = Math.min(...part.polygon.map((p) => p.x));
+              const maxX = Math.max(...part.polygon.map((p) => p.x));
+              const midX = (minX + maxX) / 2;
+              const tagText = part.designator ? part.designator.split(' - ')[0] : 'PART';
+              const tagW = Math.max(12, tagText.length * 1.7 + 5);
+              const tagH = 3.2;
+              const tagY = Math.max(2.5, minY - 4.5);
 
               return (
                 <g
@@ -224,60 +234,76 @@ export default function HardwareCanvas({
                   }}
                   className="cursor-pointer"
                 >
-                  {/* Clean Translucent Mask on Real Photo */}
+                  {/* Organic SAM-3.1 Contour Mask with Rounded Joins */}
                   <polygon
                     points={pointsStr}
                     fill={color}
-                    fillOpacity={isSelected ? 0.38 : isHovered ? 0.25 : 0.12}
+                    fillOpacity={isSelected ? 0.32 : isHovered ? 0.22 : 0.10}
                     stroke={color}
-                    strokeWidth={isSelected ? 1.5 : isHovered ? 1.1 : 0.7}
+                    strokeWidth={isSelected ? 1.4 : isHovered ? 1.0 : 0.65}
+                    strokeLinejoin="round"
+                    strokeLinecap="round"
                   />
 
-                  {/* Corner Precision Ticks */}
-                  {isSelected &&
-                    part.polygon.map((p, pIdx) => (
-                      <circle
-                        key={pIdx}
-                        cx={p.x}
-                        cy={p.y}
-                        r="0.8"
-                        fill="#FFFFFF"
+                  {/* Top Vent Defect Zone (Circular/Elliptical Halo for Capacitors) */}
+                  {part.defectVent && (
+                    <g className="pointer-events-none">
+                      <ellipse
+                        cx={part.defectVent.cx}
+                        cy={part.defectVent.cy}
+                        rx={part.defectVent.rx}
+                        ry={part.defectVent.ry}
+                        fill={color}
+                        fillOpacity={isSelected ? 0.35 : 0.18}
                         stroke={color}
-                        strokeWidth="0.4"
+                        strokeWidth={isSelected ? 1.2 : 0.75}
+                        strokeDasharray={isSelected ? "1.5 0.8" : "none"}
+                        className={isSelected ? "animate-pulse" : ""}
                       />
-                    ))}
+                    </g>
+                  )}
 
-                  {/* Center Dot */}
-                  <circle
-                    cx={part.center.x}
-                    cy={part.center.y}
-                    r={isSelected ? 1.8 : 1.2}
-                    fill={color}
-                    stroke="#FFFFFF"
-                    strokeWidth="0.4"
+                  {/* Leader Pointer Line from Floating Tag down to Component */}
+                  <line
+                    x1={midX}
+                    y1={tagY + tagH}
+                    x2={midX}
+                    y2={minY}
+                    stroke={color}
+                    strokeWidth="0.35"
+                    strokeDasharray="0.8 0.6"
+                    className="opacity-70"
                   />
 
-                  {/* Clean Component Silkscreen Tag */}
-                  <g transform={`translate(${part.center.x - 8}, ${part.center.y - 6})`}>
+                  {/* Non-Obstructive Floating Silkscreen Tag (Positioned ABOVE Component) */}
+                  <g transform={`translate(${midX - tagW / 2}, ${tagY})`}>
                     <rect
-                      width="16"
-                      height="3.6"
-                      rx="0.8"
+                      width={tagW}
+                      height={tagH}
+                      rx="1"
                       fill="#FFFFFF"
                       stroke={color}
-                      strokeWidth="0.5"
-                      className="drop-shadow-sm"
+                      strokeWidth={isSelected ? 0.8 : 0.5}
+                      className="drop-shadow-xs"
                     />
+                    {/* Status Dot */}
+                    <circle
+                      cx={1.8}
+                      cy={tagH / 2}
+                      r="0.55"
+                      fill={color}
+                    />
+                    {/* Tag Text */}
                     <text
-                      x="8"
-                      y="2.5"
+                      x={tagW / 2 + 0.8}
+                      y={tagH / 2 + 0.55}
                       fill="#0F172A"
-                      fontSize="1.8"
+                      fontSize="1.6"
                       fontWeight="bold"
                       fontFamily="monospace"
                       textAnchor="middle"
                     >
-                      {part.designator.split(' - ')[0]}
+                      {tagText}
                     </text>
                   </g>
                 </g>
