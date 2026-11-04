@@ -128,7 +128,7 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
             }`}
           >
             <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
-            <span>Ask Gemini AI</span>
+            <span>Ask Meta AI</span>
           </button>
         </div>
       </div>

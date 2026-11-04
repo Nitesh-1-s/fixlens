@@ -23,7 +23,7 @@ export default function MobileBottomNav({
     },
     {
       id: 'chat',
-      label: 'Gemini AI',
+      label: 'Meta AI',
       icon: MessageSquare,
       badge: 'AI'
     }

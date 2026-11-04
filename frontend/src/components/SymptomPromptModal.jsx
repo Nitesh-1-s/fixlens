@@ -102,7 +102,7 @@ export default function SymptomPromptModal({
                 What's the issue? Describe what happened
               </h2>
               <p className="text-[11px] sm:text-xs text-slate-500 font-medium">
-                Tell Gemini AI what's not working so it can pinpoint the exact failure.
+                Tell Meta AI what's not working so it can pinpoint the exact failure.
               </p>
             </div>
           </div>
@@ -165,7 +165,7 @@ export default function SymptomPromptModal({
                 className="text-xs font-bold text-slate-900 flex items-center gap-1.5"
               >
                 <MessageSquare className="w-3.5 h-3.5 text-teal-600" />
-                <span>Tell Gemini AI what is not working:</span>
+                <span>Tell Meta AI what is not working:</span>
               </label>
 
               {recognitionSupported && (

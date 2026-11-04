@@ -304,7 +304,7 @@ export default function ChatCopilot({ part, scenario }) {
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce [animation-delay:0.2s]"></span>
               <span className="w-1.5 h-1.5 rounded-full bg-teal-500 animate-bounce [animation-delay:0.4s]"></span>
-              <span className="font-mono text-[10px] text-slate-400 ml-1">FixLens Gemini AI analyzing defect...</span>
+              <span className="font-mono text-[10px] text-slate-400 ml-1">FixLens Meta AI analyzing defect...</span>
             </div>
           </div>
         )}
@@ -339,7 +339,7 @@ export default function ChatCopilot({ part, scenario }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={handleKeyDown}
-            placeholder={`Ask Gemini AI about ${productTitle} or how to fix it...`}
+            placeholder={`Ask Meta AI about ${productTitle} or how to fix it...`}
             disabled={isLoading}
             className="flex-1 px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-teal-500/20 focus:border-teal-500 transition-all disabled:opacity-50"
           />
