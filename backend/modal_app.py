@@ -300,11 +300,17 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
     if not data_url.startswith("data:"):
         data_url = f"data:image/jpeg;base64,{data_url}"
 
+    user_context = (req.context or "").strip()
+    symptom_prompt = ""
+    if user_context and user_context != "Hardware Inspection":
+        symptom_prompt = f"\n\nUSER REPORTED OBSERVATION / SYMPTOMS:\n\"{user_context}\"\nUse this user observation along with visual physical evidence to identify the root failure and tailor your diagnostic repair guide."
+
     prompt = (
         "You are FixLens, a world-class multimodal hardware metrology and physical defect diagnostic intelligence powered by Meta Muse Spark Open. "
         "Perform an expert visual and electromechanical analysis of this hardware photograph. "
         "Utilize your physical reasoning to deeply inspect surface textures, discoloration, mechanical alignment, "
         "solder fillets, cracking, oxidation patina, and thermal damage. "
+        f"{symptom_prompt}"
         "\n"
         "Identify the overall device/machine and analyze ALL visible components of interest. "
         "Identify the PRIMARY FAULT as critical or warning, and include 1 to 3 ADJACENT/ASSOCIATED components to provide complete operational context. "

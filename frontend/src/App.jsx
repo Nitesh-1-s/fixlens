@@ -9,6 +9,7 @@ import CameraModal from './components/CameraModal';
 import UploadCameraEntry from './components/UploadCameraEntry';
 import MobileBottomNav from './components/MobileBottomNav';
 import ErrorBoundary from './components/ErrorBoundary';
+import SymptomPromptModal from './components/SymptomPromptModal';
 import { PRESET_SCENARIOS } from './data/presets';
 import { Volume2, VolumeX, ArrowLeft } from 'lucide-react';
 
@@ -25,6 +26,7 @@ export default function App() {
   const [isLiveInferencing, setIsLiveInferencing] = useState(false);
   const [showGuideModal, setShowGuideModal] = useState(false);
   const [showCameraModal, setShowCameraModal] = useState(false);
+  const [pendingScan, setPendingScan] = useState(null); // { dataUrl, label, source }
   const [mobileTab, setMobileTab] = useState('scan'); // 'scan' | 'guide' | 'chat'
 
   const handleSelectScenario = (sc) => {
@@ -72,7 +74,7 @@ export default function App() {
   };
 
   // Image Processing for Uploaded or Camera captured hardware photos
-  const handleProcessImage = async (rawUrl, label = 'Hardware Capture') => {
+  const handleProcessImage = async (rawUrl, label = 'Hardware Capture', userSymptom = '') => {
     setIsLiveInferencing(true);
     const dataUrl = await compressImage(rawUrl);
 
@@ -81,7 +83,9 @@ export default function App() {
       name: 'Analyzing Hardware Topology...',
       designator: 'FAULT-DETECTION - Active Scan',
       deviceName: 'Hardware Assembly',
-      laymanSummary: 'Meta Muse Spark Open is inspecting this hardware photo to identify the device and localize defects.',
+      laymanSummary: userSymptom
+        ? `Inspecting physical failure for reported symptom: "${userSymptom}".`
+        : 'Meta Muse Spark Open is inspecting this hardware photo to identify the device and localize defects.',
       laymanFixGuide: 'De-energize device completely and inspect highlighted area.',
       beginnerFriendly: 'Inspecting defect severity...',
       center: { x: 50, y: 50 },
@@ -95,7 +99,9 @@ export default function App() {
       statusLabel: 'INSPECTING VIA META AI...',
       healthScore: 50,
       confidence: 0.95,
-      diagnosis: 'Transmitting hardware photo to Meta Muse Spark Open on Modal Cloud...',
+      diagnosis: userSymptom
+        ? `User reported issue: "${userSymptom}". Correlating visual evidence with reported symptoms...`
+        : 'Transmitting hardware photo to Meta Muse Spark Open on Modal Cloud...',
       rootCause: 'Analyzing visible surface fatigue and component characteristics...',
       safetyAlert: 'Ensure hardware is completely unplugged and de-energized before hands-on servicing.',
       tools: ['Digital Multimeter', 'Precision Screwdriver Set', 'Cleaning Solvent'],
@@ -110,10 +116,13 @@ export default function App() {
     const newScenario = {
       id: `custom_${Date.now()}`,
       title: label.replace(/\.[^/.]+$/, '').toUpperCase(),
-      subtitle: 'Multimodal AI Vision Defect Inspection',
+      subtitle: userSymptom || 'Multimodal AI Vision Defect Inspection',
       category: 'Live Failure Scan',
       imageType: 'custom',
-      description: 'Analyzing physical hardware failure via Meta Muse Spark Open on Modal Cloud...',
+      userSymptom: userSymptom || null,
+      description: userSymptom
+        ? `Reported Symptom: "${userSymptom}"`
+        : 'Analyzing physical hardware failure via Meta Muse Spark Open on Modal Cloud...',
       customImageUrl: dataUrl,
       parts: [initialPart]
     };
@@ -126,12 +135,16 @@ export default function App() {
 
     // Call live Modal vision endpoint
     try {
+      const contextPayload = userSymptom
+        ? `${label} | User Reported Symptoms: ${userSymptom}`
+        : label;
+
       const resp = await fetch(LIVE_ANALYZE_IMAGE_API, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           image_base64: dataUrl,
-          context: label
+          context: contextPayload
         })
       });
 
@@ -245,8 +258,11 @@ export default function App() {
           const finalScenario = {
             ...newScenario,
             title: identifiedDevice.toUpperCase(),
-            subtitle: ai.layman_summary || 'Multimodal AI Vision Defect Inspection',
-            description: `Automated fault detection complete. Identified: ${identifiedDevice} · Primary Defect: ${primaryPart.name}.`,
+            subtitle: userSymptom || ai.layman_summary || 'Multimodal AI Vision Defect Inspection',
+            userSymptom: userSymptom || null,
+            description: userSymptom
+              ? `Reported Issue: "${userSymptom}" · Identified: ${identifiedDevice} · Fault: ${primaryPart.name}`
+              : `Automated fault detection complete. Identified: ${identifiedDevice} · Primary Defect: ${primaryPart.name}.`,
             failureSeverity: failureSeverity,
             diySavings: diySavings,
             parts: processedParts
@@ -267,7 +283,9 @@ export default function App() {
         name: 'Primary Hardware Fault',
         designator: 'FAULT-1 - CRITICAL',
         deviceName: label.replace(/\.[^/.]+$/, '').toUpperCase() || 'Hardware Assembly',
-        laymanSummary: 'Physical defect detected in the primary load-bearing area. De-energize the device and follow the step-by-step checklist below.',
+        laymanSummary: userSymptom
+          ? `Physical defect identified corresponding to: "${userSymptom}". De-energize the device and follow the step-by-step checklist below.`
+          : 'Physical defect detected in the primary load-bearing area. De-energize the device and follow the step-by-step checklist below.',
         laymanFixGuide: 'Disconnect power, clean contact surfaces, and check mounting torque.',
         beginnerFriendly: 'Yes — DIY friendly with basic tools',
         failureSeverity: 'HIGH — Thermal or mechanical stress',
@@ -275,7 +293,9 @@ export default function App() {
         status: 'critical',
         statusLabel: 'CRITICAL: Physical Defect',
         healthScore: 35,
-        diagnosis: 'Visual inspection reveals surface thermal discolouration, oxidation patina, and operational material wear.',
+        diagnosis: userSymptom
+          ? `Analysis of hardware image with user reported issue "${userSymptom}" indicates component failure.`
+          : 'Visual inspection reveals surface thermal discolouration, oxidation patina, and operational material wear.',
         rootCause: 'Duty cycle thermal fatigue and localized electrical resistance hotspots.',
         safetyAlert: 'Ensure unit is de-energized and unplugged before servicing.',
         tools: ['Digital Multimeter', 'Precision Screwdrivers', '99% Isopropyl Alcohol'],
@@ -290,8 +310,11 @@ export default function App() {
       const fallbackScenario = {
         ...newScenario,
         title: fallbackPart.deviceName,
-        subtitle: 'Hardware Diagnostic Inspection',
-        description: `Defect inspection complete for ${fallbackPart.deviceName}.`,
+        subtitle: userSymptom || 'Hardware Diagnostic Inspection',
+        userSymptom: userSymptom || null,
+        description: userSymptom
+          ? `Reported Issue: "${userSymptom}" · Component: ${fallbackPart.deviceName}`
+          : `Defect inspection complete for ${fallbackPart.deviceName}.`,
         failureSeverity: fallbackPart.failureSeverity,
         diySavings: fallbackPart.diySavings,
         parts: [fallbackPart]
@@ -309,13 +332,23 @@ export default function App() {
     if (!file) return;
     const reader = new FileReader();
     reader.onload = () => {
-      handleProcessImage(reader.result, file.name);
+      setPendingScan({
+        dataUrl: reader.result,
+        label: file.name,
+        source: 'upload'
+      });
     };
     reader.readAsDataURL(file);
+    e.target.value = '';
   };
 
   const handleCameraCapture = (dataUrl) => {
-    handleProcessImage(dataUrl, 'Live Camera Capture');
+    setShowCameraModal(false);
+    setPendingScan({
+      dataUrl,
+      label: 'Live Camera Capture',
+      source: 'camera'
+    });
   };
 
   const handlePointClick = ({ x, y }) => {
@@ -583,6 +616,30 @@ export default function App() {
         <CameraModal
           onCapture={handleCameraCapture}
           onClose={() => setShowCameraModal(false)}
+        />
+      )}
+
+      {/* Symptom Chat Intake Modal right after Upload or Camera Capture */}
+      {pendingScan && (
+        <SymptomPromptModal
+          photoDataUrl={pendingScan.dataUrl}
+          photoLabel={pendingScan.label}
+          source={pendingScan.source}
+          onConfirm={(symptoms) => {
+            const { dataUrl, label } = pendingScan;
+            setPendingScan(null);
+            handleProcessImage(dataUrl, label, symptoms);
+          }}
+          onCancel={() => setPendingScan(null)}
+          onChangePhoto={() => {
+            const isCamera = pendingScan.source === 'camera';
+            setPendingScan(null);
+            if (isCamera) {
+              setShowCameraModal(true);
+            } else {
+              document.getElementById('main-file-upload')?.click();
+            }
+          }}
         />
       )}
     </div>

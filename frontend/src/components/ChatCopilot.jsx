@@ -114,15 +114,19 @@ export default function ChatCopilot({ part, scenario }) {
   // Update welcome message if part or scenario changes
   useEffect(() => {
     if (part) {
+      const symptomNote = scenario?.userSymptom
+        ? `📝 **You reported:** *"${scenario.userSymptom}"*\n\n`
+        : '';
+
       setMessages([
         {
           id: `welcome_${Date.now()}`,
           role: 'assistant',
-          content: `👋 **Hi! I analyzed your hardware image.**\n\n• **Product:** **${part?.deviceName || scenario?.title || 'Hardware System'}**\n• **Target Component:** **${part.name}**\n• **Status:** ${part.statusLabel ? part.statusLabel.split(':')[0] : part.status.toUpperCase()}\n\n${part.laymanSummary || 'Defect identified. Ask me what this does, what tools you need, or how to fix it step-by-step!'}`
+          content: `👋 **Hi! I analyzed your hardware image.**\n\n${symptomNote}• **Product:** **${part?.deviceName || scenario?.title || 'Hardware System'}**\n• **Target Component:** **${part.name}**\n• **Status:** ${part.statusLabel ? part.statusLabel.split(':')[0] : part.status.toUpperCase()}\n\n${part.laymanSummary || 'Defect identified. Ask me what this does, what tools you need, or how to fix it step-by-step!'}`
         }
       ]);
     }
-  }, [part?.id, scenario?.id]);
+  }, [part?.id, scenario?.id, scenario?.userSymptom]);
 
   const handleSendMessage = async (textToSend) => {
     const query = textToSend || input;

@@ -149,6 +149,17 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
               </div>
             )}
 
+            {/* User Reported Symptom Banner */}
+            {scenario?.userSymptom && (
+              <div className="p-2 bg-teal-50/70 border border-teal-200 rounded-xl text-xs flex items-start gap-2 shadow-2xs">
+                <MessageSquare className="w-3.5 h-3.5 text-teal-600 mt-0.5 shrink-0" />
+                <div className="min-w-0 text-[11px] leading-snug">
+                  <span className="font-bold text-teal-900 mr-1 font-mono uppercase text-[9.5px]">Your Reported Issue:</span>
+                  <span className="text-slate-800 italic font-medium">"{scenario.userSymptom}"</span>
+                </div>
+              </div>
+            )}
+
             {/* 1. COMPACT PROBLEM & TOOLS STRIP */}
             <div className="p-2 bg-slate-50 border border-slate-200 rounded-xl space-y-1 text-xs">
               <div className="flex items-center justify-between gap-1.5 flex-wrap">
