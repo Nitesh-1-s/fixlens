@@ -7,12 +7,14 @@ import {
 } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import ChatCopilot from './ChatCopilot';
+import { toPlainEnglish } from '../utils/plainEnglish';
 
 export default function DiagnosticSidebar({ part, scenario, onExportReport, isLiveInferencing, onHighlightPart }) {
   const [completedSteps, setCompletedSteps] = useState({});
   const [showTechnicalSpecs, setShowTechnicalSpecs] = useState(false);
   const [activeTab, setActiveTab] = useState('teardown');
   const [copied, setCopied] = useState(false);
+  const [usePlainEnglish, setUsePlainEnglish] = useState(true);
 
   if (!part) {
     return (
@@ -197,14 +199,29 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
 
             {/* 2. STEP-BY-STEP REPAIR CHECKLIST (FRONT & CENTER) */}
             <div className="p-2 bg-white border border-slate-200 rounded-xl space-y-1.5 shadow-2xs">
-              <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between gap-1">
                 <h4 className="text-[11px] font-bold uppercase tracking-wider text-slate-900 flex items-center gap-1.5 font-mono">
                   <CheckSquare className="w-3.5 h-3.5 text-teal-600" />
                   Repair Steps ({completedCount}/{stepsCount})
                 </h4>
-                <span className={`text-[10px] font-mono font-bold ${isAllComplete ? 'text-emerald-600' : 'text-teal-700'}`}>
-                  {progressPct}% Complete
-                </span>
+                <div className="flex items-center gap-1.5">
+                  <button
+                    type="button"
+                    onClick={() => setUsePlainEnglish(!usePlainEnglish)}
+                    className={`px-1.5 py-0.5 rounded text-[8.5px] font-bold transition-all border flex items-center gap-1 ${
+                      usePlainEnglish
+                        ? 'bg-emerald-50 text-emerald-800 border-emerald-300 shadow-2xs'
+                        : 'bg-slate-100 text-slate-600 border-slate-200 hover:bg-slate-200'
+                    }`}
+                    title="Toggle Simple English for ages 10 to 80 vs Technical OEM specs"
+                  >
+                    <span className={`w-1.5 h-1.5 rounded-full ${usePlainEnglish ? 'bg-emerald-500 animate-pulse' : 'bg-slate-400'}`}></span>
+                    <span>{usePlainEnglish ? 'Simple English (Ages 10–80)' : 'Technical Specs'}</span>
+                  </button>
+                  <span className={`text-[10px] font-mono font-bold shrink-0 ${isAllComplete ? 'text-emerald-600' : 'text-teal-700'}`}>
+                    {progressPct}%
+                  </span>
+                </div>
               </div>
 
               {/* Progress bar */}
@@ -231,6 +248,8 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
               <div className="space-y-1">
                 {part.steps?.map((step, idx) => {
                   const isDone = !!completedSteps[idx];
+                  const displayText = usePlainEnglish ? toPlainEnglish(step) : step;
+
                   return (
                     <div
                       key={idx}
@@ -260,7 +279,7 @@ export default function DiagnosticSidebar({ part, scenario, onExportReport, isLi
                         )}
                       </div>
                       <span className={`text-[11px] leading-snug flex-1 ${isDone ? 'line-through text-slate-400' : 'text-slate-800 font-medium'}`}>
-                        {step}
+                        {displayText}
                       </span>
                     </div>
                   );

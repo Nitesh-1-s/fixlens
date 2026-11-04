@@ -345,11 +345,14 @@ def analyze_image(req: AnalyzeImageRequest) -> Dict[str, Any]:
         "      \"root_cause\": \"1-2 sentences detailing the exact physics/chemical failure mechanism\",\n"
         "      \"safety_alert\": \"Mandatory de-energization or PPE safety instruction\",\n"
         "      \"tools\": [\"Tool 1 with spec\", \"Tool 2 with spec\", \"Tool 3\"],\n"
-        "      \"steps\": [\"Step 1 with exact action\", \"Step 2\", \"Step 3\", \"Step 4\", \"Step 5\"],\n"
+        "      \"steps\": [\"Step 1 in warm, ultra-clear English for ages 10 to 80\", \"Step 2\", \"Step 3\", \"Step 4\", \"Step 5\"],\n"
         "      \"target_spec\": \"Exact OEM operating tolerance and part spec\"\n"
         "    }\n"
         "  ]\n"
         "}\n"
+        "CRITICAL REQUIREMENT FOR 'steps': All repair checklist steps must be written in warm, simple, everyday English accessible to people aged 10 to 80! "
+        "NEVER use dense engineering acronyms or telecom jargon (DO NOT write '0V tip-to-ring', 'DMM', 'TIA/EIA', 'insulation resistance >100 MegaOhms', 'wetting meniscus'). "
+        "Instead, write action-first everyday sentences: e.g. 'Unplug the power cord from the wall outlet so there is zero electricity', 'Snip off the broken wire ends with scissors or wire cutters', 'Match the same colored wires together (blue to blue, white to white)', 'Wrap tightly with electrical tape to seal out moisture, plug in, and test'. "
         "Provide accurate visual percentage coordinates (0 to 100 from top-left) for all detected components so each can be highlighted on the visual canvas."
     )
 
