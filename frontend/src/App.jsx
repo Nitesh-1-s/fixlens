@@ -382,12 +382,12 @@ export default function App() {
     }
 
     return (
-      <div className="flex-1 w-full max-w-[1440px] mx-auto p-3 sm:p-4 md:p-5 flex flex-col gap-2.5 sm:gap-3 animate-fadeIn pb-20 lg:pb-2">
+      <div className="flex-1 w-full max-w-[1536px] mx-auto p-2 sm:p-3 lg:px-4 lg:py-2.5 flex flex-col gap-2 min-h-0 overflow-hidden animate-fadeIn pb-20 lg:pb-0">
         {/* Status Bar during Live Cloud Inference */}
         {isLiveInferencing && (
-          <div className="w-full bg-teal-50 border border-teal-200 px-4 py-2.5 rounded-xl flex items-center justify-between text-xs text-teal-900 animate-pulse shadow-xs">
-            <div className="flex items-center gap-2.5 font-medium">
-              <div className="w-4 h-4 rounded-full border-2 border-teal-600 border-t-transparent animate-spin" />
+          <div className="w-full bg-teal-50 border border-teal-200 px-3 py-2 rounded-xl flex items-center justify-between text-xs text-teal-900 animate-pulse shadow-xs shrink-0">
+            <div className="flex items-center gap-2 font-medium">
+              <div className="w-3.5 h-3.5 rounded-full border-2 border-teal-600 border-t-transparent animate-spin shrink-0" />
               <span>Analyzing hardware image with Meta Muse Spark Open...</span>
             </div>
             <span className="text-[10px] font-mono text-teal-700 font-semibold hidden sm:inline">
@@ -397,11 +397,11 @@ export default function App() {
         )}
 
         {/* Top Info & Segment Selector Bar */}
-        <div className="flex flex-col gap-2.5">
+        <div className="flex flex-col gap-1.5 shrink-0">
           {/* Status & Quick Actions Bar */}
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 px-1">
             <div className="flex items-center gap-2 flex-wrap min-w-0">
-              <span className="px-2.5 py-0.5 rounded-md text-[10px] font-mono font-bold bg-teal-50 text-teal-800 border border-teal-200 shrink-0">
+              <span className="px-2 py-0.5 rounded-md text-[10px] font-mono font-bold bg-teal-50 text-teal-800 border border-teal-200 shrink-0">
                 {selectedScenario.category}
               </span>
               <h2 className="text-sm sm:text-base font-bold text-slate-900 tracking-tight">
@@ -413,7 +413,7 @@ export default function App() {
             <div className="flex items-center gap-2 shrink-0 self-start sm:self-auto">
               <button
                 onClick={handleToggleVoice}
-                className={`h-8 px-3 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-all border shadow-2xs ${
+                className={`h-7 px-2.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all border shadow-2xs ${
                   isSpeaking
                     ? 'bg-red-50 text-red-600 border-red-200'
                     : 'bg-white text-slate-700 border-slate-200 hover:border-teal-300'
@@ -428,9 +428,9 @@ export default function App() {
 
           {/* Component Pill Carousel */}
           {selectedScenario.parts && selectedScenario.parts.length > 0 && (
-            <div className="flex items-center gap-2 overflow-x-auto py-1 px-1 custom-scrollbar">
-              <span className="text-[10px] font-mono text-slate-400 uppercase tracking-wider shrink-0 font-bold mr-1">
-                Components:
+            <div className="flex items-center gap-1.5 overflow-x-auto py-0.5 px-0.5 custom-scrollbar">
+              <span className="text-[9px] font-mono text-slate-400 uppercase tracking-wider shrink-0 font-bold mr-1">
+                COMPONENTS:
               </span>
               <div className="flex items-center gap-1.5">
                 {selectedScenario.parts.map((p) => {
@@ -439,14 +439,14 @@ export default function App() {
                     <button
                       key={p.id}
                       onClick={() => setSelectedPart(p)}
-                      className={`h-8 px-3 rounded-xl text-xs font-semibold shrink-0 transition-all flex items-center gap-2 border shadow-2xs whitespace-nowrap ${
+                      className={`h-7 px-2.5 rounded-lg text-xs font-semibold shrink-0 transition-all flex items-center gap-1.5 border shadow-2xs whitespace-nowrap ${
                         isSelected
                           ? 'bg-teal-700 text-white border-teal-700'
                           : 'bg-white text-slate-700 border-slate-200 hover:border-slate-300'
                       }`}
                     >
                       <span
-                        className={`w-2 h-2 rounded-full shrink-0 ${
+                        className={`w-1.5 h-1.5 rounded-full shrink-0 ${
                           p.status === 'critical'
                             ? 'bg-red-400'
                             : p.status === 'warning'
@@ -466,8 +466,8 @@ export default function App() {
           )}
         </div>
 
-        {/* Desktop View (Side-by-Side Dual Column) */}
-        <div className="hidden lg:flex flex-1 flex-row gap-4 xl:gap-5 h-[calc(100vh-165px)] min-h-[540px] max-h-[860px]">
+        {/* Desktop View (Side-by-Side Dual Column Cockpit) */}
+        <div className="hidden lg:flex flex-1 flex-row gap-3 xl:gap-4 min-h-0 overflow-hidden">
           <HardwareCanvas
             scenario={selectedScenario}
             selectedPart={selectedPart}
@@ -537,7 +537,9 @@ export default function App() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100/50 text-slate-900 flex flex-col font-sans select-none antialiased">
+    <div className={`w-full bg-slate-100/50 text-slate-900 flex flex-col font-sans select-none antialiased ${
+      isEntryView ? 'min-h-screen' : 'h-screen overflow-hidden'
+    }`}>
       {/* Main Top Navigation Header */}
       <Navbar
         scenarios={scenarios}
@@ -550,17 +552,19 @@ export default function App() {
       />
 
       {/* Main Content View (Edge-to-Edge Responsive) */}
-      <div className="flex-1 flex flex-col bg-white">
+      <div className="flex-1 flex flex-col min-h-0 overflow-hidden bg-white">
         {renderWorkspaceContent()}
       </div>
 
-      {/* Desktop Global Footer */}
-      <footer className="w-full border-t border-slate-100 py-3 px-6 text-center bg-white hidden sm:block">
-        <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 font-mono">
-          <span>FixLens · Built for <strong className="text-slate-700">Meta Global AI Developer Hackathon 2026</strong></span>
-          <span className="text-teal-700 font-medium">Meta Muse Spark Open · SAM 3.1 · Modal Serverless Cloud</span>
-        </div>
-      </footer>
+      {/* Desktop Global Footer (Rendered only on entry landing view) */}
+      {isEntryView && (
+        <footer className="w-full border-t border-slate-100 py-3 px-6 text-center bg-white hidden sm:block shrink-0">
+          <div className="max-w-[1440px] mx-auto flex flex-col sm:flex-row items-center justify-between gap-2 text-[10px] text-slate-400 font-mono">
+            <span>FixLens · Built for <strong className="text-slate-700">Meta Global AI Developer Hackathon 2026</strong></span>
+            <span className="text-teal-700 font-medium">Meta Muse Spark Open · SAM 3.1 · Modal Serverless Cloud</span>
+          </div>
+        </footer>
+      )}
 
       {/* Modals */}
       {workOrderPart && (
