@@ -77,17 +77,7 @@ modal deploy modal_app.py
 
 ---
 
-## 🎬 2-Minute Hackathon Demo Script (For Cerebral Valley / Devpost)
-
-- **0:00 - 0:25 (The Hook):** Show a broken 3D printer hotend or car alternator. Explain that repair shops charge $150 just to diagnose, while millions of appliances end up in landfills because non-technical users don't know what's broken.
-- **0:25 - 1:00 (Live Capture & Teardown):** Snap a photo using FixLens. Watch the animated **FIXLENS** bootloader. Show the instant topological breakdown: Brass Nozzle (Critical), Aluminum Heater Block (Warning), Heatsink, and Wiring Harness.
-- **1:00 - 1:30 (Beginner Guide & DIY Savings):** Point to *"What Is This & What To Do"*. Show *"💰 Est. DIY Savings: $45 - $95 vs hotend replacement"*. Click Step 1 in the checklist — show the live radar ping highlighting the nozzle on the photo.
-- **1:30 - 1:45 (Multimodal Chat & CoT Reasoning):** Ask the AI Copilot: *"Can I touch this with bare hands?"*. Show the verified **11,000+ character Chain-of-Thought (CoT)** reasoning trace from Meta Muse Spark Open.
-- **1:45 - 2:00 (Closing):** Click *"Print / Save PDF Work Order"* to show the enterprise engineering ticket. Conclude: *"FixLens democratizes physical hardware intelligence and accelerates the global Right-to-Repair movement."*
-
----
-
 ## 👥 Authors & Acknowledgments
-- **Builder:** Nitesh (`nitesh.naasai@gmail.com` / `nitesh369`) — Solo Builder (Indie Developer Track)
+- **Builder:** Nitesh (`nitesh.naasai@gmail.com` / `Nitesh-1-s`) — Solo Builder (Indie Developer Track)
 - **Built for:** Meta Global AI Developer Hackathon 2026 on Cerebral Valley
 - **Powered by:** Meta Muse Spark Open, Meta SAM 3.1, Modal Serverless, Baseten
