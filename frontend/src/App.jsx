@@ -382,7 +382,7 @@ export default function App() {
     }
 
     return (
-      <div className="flex-1 w-full max-w-[1440px] mx-auto p-3 sm:p-5 md:p-6 flex flex-col gap-3 sm:gap-4 animate-fadeIn pb-20 lg:pb-6">
+      <div className="flex-1 w-full max-w-[1440px] mx-auto p-3 sm:p-4 md:p-5 flex flex-col gap-2.5 sm:gap-3 animate-fadeIn pb-20 lg:pb-2">
         {/* Status Bar during Live Cloud Inference */}
         {isLiveInferencing && (
           <div className="w-full bg-teal-50 border border-teal-200 px-4 py-2.5 rounded-xl flex items-center justify-between text-xs text-teal-900 animate-pulse shadow-xs">
@@ -467,7 +467,7 @@ export default function App() {
         </div>
 
         {/* Desktop View (Side-by-Side Dual Column) */}
-        <div className="hidden lg:flex flex-1 flex-row gap-5 min-h-[620px]">
+        <div className="hidden lg:flex flex-1 flex-row gap-4 xl:gap-5 h-[calc(100vh-165px)] min-h-[540px] max-h-[860px]">
           <HardwareCanvas
             scenario={selectedScenario}
             selectedPart={selectedPart}

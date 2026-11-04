@@ -186,7 +186,7 @@ export default function HardwareCanvas({
           onClick={handleClick}
           onMouseMove={handleMouseMove}
           onMouseLeave={handleMouseLeave}
-          className="relative max-w-full max-h-[620px] rounded-xl overflow-hidden shadow-xs border border-slate-200 bg-slate-950 z-10"
+          className="relative max-w-full max-h-full rounded-xl overflow-hidden shadow-xs border border-slate-200 bg-slate-950 z-10 flex items-center justify-center"
           style={{
             transform: `scale(${zoom})`,
             transformOrigin: 'center center',
@@ -197,7 +197,7 @@ export default function HardwareCanvas({
           <img
             src={imageSrc}
             alt={scenario.title}
-            className="w-full h-auto max-h-[580px] object-cover block select-none pointer-events-none"
+            className="w-full h-auto max-h-[calc(100vh-270px)] object-contain block select-none pointer-events-none"
           />
 
           {/* Precision SAM 3.1 Segmentation SVG Overlay */}
