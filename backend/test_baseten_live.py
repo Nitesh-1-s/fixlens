@@ -2,7 +2,7 @@ import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
-load_dotenv(dotenv_path="F:/ja/backend/.env")
+load_dotenv()
 
 api_key = os.environ.get("BASETEN_API_KEY")
 base_url = os.environ.get("BASETEN_BASE_URL", "https://inference.baseten.co/v1")

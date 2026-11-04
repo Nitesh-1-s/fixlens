@@ -1,16 +1,21 @@
-# React + Vite
+# FixLens Frontend Client
 
-This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
+Modern, responsive web client for **FixLens: Multimodal Visual Hardware & Appliance Diagnostic Intelligence**.
 
-Currently, two official plugins are available:
+## 🛠️ Tech Stack
+- **Framework:** React 19 + Vite 6
+- **Styling:** Tailwind CSS v4
+- **Icons:** Lucide React
+- **Audio & Accessibility:** Native Web Speech API (`window.speechSynthesis`, `webkitSpeechRecognition`)
+- **PDF Generation:** Client-side vector report synthesis
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+## 🚀 Development Setup
+```bash
+# Install dependencies
+npm install
 
-## React Compiler
+# Start local dev server
+npm run dev
+```
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
-
-## Expanding the Oxlint configuration
-
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and Oxlint's TypeScript related rules in your project.
+Built for the **Meta Global AI Developer Hackathon 2026**.
